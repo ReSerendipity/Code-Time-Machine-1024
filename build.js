@@ -15,6 +15,8 @@ const jsFiles = [
   "era4-web.js",
   "era5-cloud.js",
   "era6-ai.js",
+  "agent.js",
+  "finale.js",
   "result.js",
   "main.js",
 ];

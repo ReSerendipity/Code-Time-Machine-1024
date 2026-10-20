@@ -815,6 +815,7 @@ kbd {
 }
 
 .p-stamp {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1743,11 +1744,15 @@ kbd {
   text-align: center;
 }
 
-.card-instruction span {
+.card-instruction .ci-derive {
   color: #2b2118;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
+}
+
+.card-instruction .ci-how {
+  color: #7a4b2a;
 }
 
 .card-instruction code {
@@ -4492,6 +4497,338 @@ kbd {
 }
 
 /* =========================================================
+   countdown · agent takeover · finale
+   ========================================================= */
+body[data-era="finale"] {
+  --era-bg: #05070b;
+  --era-bg-2: #0b0a14;
+  --era-accent: #8ff0ff;
+  --era-accent-2: #c084fc;
+  --era-text: #eef2f8;
+  --era-muted: #98a0bf;
+  --era-line: rgba(143, 240, 255, 0.22);
+  --era-panel: rgba(255, 255, 255, 0.03);
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 6px 12px;
+  border: 1px solid var(--era-line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  font-family: var(--font-mono);
+}
+
+.countdown .cd-label {
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--era-muted);
+}
+
+.countdown .cd-value {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--era-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown.is-warning {
+  border-color: rgba(224, 164, 88, 0.6);
+}
+
+.countdown.is-warning .cd-value {
+  color: #e0a458;
+}
+
+.countdown.is-critical {
+  border-color: rgba(255, 139, 139, 0.7);
+  animation: cdPulse 1s ease-in-out infinite;
+}
+
+.countdown.is-critical .cd-value {
+  color: #ff8b8b;
+}
+
+@keyframes cdPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 139, 139, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 139, 139, 0.14);
+  }
+}
+
+.agent-banner {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--topbar-h) + 14px);
+  z-index: 46;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 14px;
+  border: 1px solid rgba(192, 132, 252, 0.55);
+  border-radius: 999px;
+  background: rgba(10, 8, 20, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+  color: #e6d5ff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  transform: translateX(-50%);
+  animation: agentIn 0.4s ease both;
+}
+
+.agent-banner .ab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 12px #c084fc;
+  animation: blink 1.1s steps(2, start) infinite;
+}
+
+.agent-banner .ab-cancel {
+  padding: 4px 10px;
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  border-radius: 999px;
+  background: transparent;
+  color: #cbb3f5;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.agent-banner .ab-cancel:hover {
+  border-color: #c084fc;
+  color: #fff;
+}
+
+@keyframes agentIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.agent-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 47;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.16s cubic-bezier(0.3, 0.9, 0.3, 1), opacity 0.2s;
+}
+
+.agent-cursor.is-on {
+  opacity: 1;
+}
+
+.agent-cursor .ac-ring {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #c084fc;
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(192, 132, 252, 0.6), inset 0 0 12px rgba(192, 132, 252, 0.35);
+  animation: acSpin 2.4s linear infinite;
+}
+
+.agent-cursor .ac-ring::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  border-radius: 50%;
+  background: #e6d5ff;
+}
+
+.agent-cursor .ac-tag {
+  position: absolute;
+  left: 18px;
+  top: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(192, 132, 252, 0.16);
+  color: #e6d5ff;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
+
+@keyframes acSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.p-stamp.is-agent .p-icon {
+  border-color: rgba(192, 132, 252, 0.6);
+  color: #c084fc;
+}
+
+.p-agent {
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(192, 132, 252, 0.18);
+  color: #d8bffc;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+}
+
+.hint-assist {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 7px 13px;
+  border: 1px solid rgba(192, 132, 252, 0.55);
+  border-radius: 999px;
+  background: rgba(192, 132, 252, 0.1);
+  color: #e6d5ff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.hint-assist:hover {
+  border-color: #c084fc;
+  background: rgba(192, 132, 252, 0.2);
+}
+
+.takeover-note {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 12px 15px;
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  border-left: 3px solid #c084fc;
+  border-radius: 12px;
+  background: rgba(192, 132, 252, 0.07);
+}
+
+.takeover-note b {
+  color: #d8bffc;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.takeover-note span {
+  color: var(--era-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.composer-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--era-muted);
+  font-size: 10px;
+}
+
+.composer-count {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.composer-count.is-ready {
+  color: var(--era-ok);
+}
+
+.suggest-label {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+#screen-finale {
+  position: relative;
+  min-height: 100vh;
+  background: #05070b;
+}
+
+#finale-canvas {
+  display: block;
+  width: 100%;
+  height: 100vh;
+}
+
+.finale-hud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 clamp(18px, 4vw, 44px) clamp(24px, 5vh, 46px);
+  pointer-events: none;
+}
+
+.finale-caption {
+  max-width: 62ch;
+  color: #dbe6f5;
+  font-size: clamp(13px, 1.7vw, 17px);
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
+}
+
+.finale-caption.is-in {
+  animation: captionIn 0.7s ease both;
+}
+
+@keyframes captionIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.finale-skip {
+  pointer-events: auto;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #cfd8e6;
+}
+
+body.is-finale #topbar,
+body.is-finale #passport {
+  display: none;
+}
+
+body.is-finale #main {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* =========================================================
    animations
    ========================================================= */
 @keyframes screenIn {
@@ -4696,6 +5033,36 @@ kbd {
 
   .sound-label {
     display: none;
+  }
+
+  .countdown {
+    padding: 5px 9px;
+  }
+
+  .countdown .cd-label {
+    display: none;
+  }
+
+  .countdown .cd-value {
+    font-size: 12px;
+  }
+
+  .agent-banner {
+    max-width: calc(100vw - 24px);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .suggest-label {
+    margin-left: 0;
+  }
+
+  .finale-hud {
+    padding: 0 16px 22px;
+  }
+
+  .finale-caption {
+    font-size: 13px;
   }
 
   .icon-btn {
@@ -5012,6 +5379,11 @@ kbd {
 
       <div id="top-progress" class="top-progress" hidden aria-live="polite"></div>
 
+      <div id="countdown" class="countdown" hidden role="timer" aria-label="本机剩余时间">
+        <span class="cd-label">TIME LEFT</span>
+        <span class="cd-value" id="countdown-value">17:04</span>
+      </div>
+
       <div class="top-actions">
         <button id="sound-toggle" class="icon-btn sound-btn" type="button" aria-pressed="false" aria-label="切换音效">
           <span class="sound-dot" aria-hidden="true"></span>
@@ -5037,9 +5409,9 @@ kbd {
             </div>
             <div id="boot-log" class="boot-log" aria-live="polite"></div>
             <form id="start-form" class="start-form" autocomplete="off">
-              <label for="traveler">旅行者代号 <span>可留空，默认“匿名 Builder”</span></label>
+              <label for="traveler">旅行者代号 <span>可留空，默认“TRAE Builder”</span></label>
               <div class="start-row">
-                <input id="traveler" name="traveler" maxlength="16" placeholder="匿名 Builder" aria-label="旅行者代号">
+                <input id="traveler" name="traveler" maxlength="16" placeholder="TRAE Builder" aria-label="旅行者代号">
                 <button id="start-btn" class="btn btn-primary" type="submit">
                   启动时间机器 <span aria-hidden="true">→</span>
                 </button>
@@ -5051,7 +5423,7 @@ kbd {
               <button id="restart-btn" class="btn btn-quiet" type="button">重新开始</button>
             </div>
             <div class="console-foot">
-              <span>6 个时代 · 约 5 分钟 · 无需登录</span>
+              <span>6 个时代 · 1024 秒内通关 · 无需登录</span>
               <button id="sound-toggle-2" class="linkish" type="button" aria-pressed="false">声音：关</button>
             </div>
           </div>
@@ -5071,6 +5443,14 @@ kbd {
 
       <section id="screen-era" class="screen" aria-labelledby="era-title">
         <div id="era-root"></div>
+      </section>
+
+      <section id="screen-finale" class="screen" aria-label="从纸带到光标">
+        <canvas id="finale-canvas" aria-hidden="true"></canvas>
+        <div class="finale-hud">
+          <div id="finale-caption" class="finale-caption" aria-live="polite"></div>
+          <button id="finale-skip" class="btn btn-quiet finale-skip" type="button">跳过 →</button>
+        </div>
       </section>
 
       <section id="screen-result" class="screen" aria-labelledby="result-title">
@@ -5103,6 +5483,12 @@ kbd {
         <div id="tunnel-label" class="tunnel-label">正在校准时间坐标</div>
         <button id="tunnel-skip" class="btn btn-quiet" type="button">跳过</button>
       </div>
+    </div>
+
+    <div id="agent-banner" class="agent-banner" hidden>
+      <span class="ab-dot" aria-hidden="true"></span>
+      <span class="ab-text">AGENT TAKING OVER · 剩下的交给我</span>
+      <button id="agent-cancel" class="ab-cancel" type="button">我来</button>
     </div>
 
     <div id="modal-root" class="modal-root" hidden></div>
@@ -5168,6 +5554,9 @@ kbd {
 
   const initialScores = () => ({ manual: 0, systems: 0, expression: 0, direction: 0 });
 
+  const TIME_LIMIT_MS = 1024 * 1000;
+  const DEFAULT_TRAVELER = "TRAE Builder";
+
   const state = {
     traveler: "",
     eraIndex: 0,
@@ -5181,6 +5570,8 @@ kbd {
     completed: false,
     startedAt: null,
     finishedAt: null,
+    deadlineAt: null,
+    takeover: [],
     shared: false,
   };
 
@@ -5188,6 +5579,8 @@ kbd {
   CTM.$$ = $$;
   CTM.state = state;
   CTM.eras = CTM.eras || [];
+  CTM.TIME_LIMIT_MS = TIME_LIMIT_MS;
+  CTM.DEFAULT_TRAVELER = DEFAULT_TRAVELER;
   CTM.utils = {
     clamp,
     sleep,
@@ -5221,7 +5614,7 @@ kbd {
     save() {
       try {
         const payload = {
-          v: 2,
+          v: 3,
           traveler: state.traveler,
           eraIndex: state.eraIndex,
           stamps: state.stamps,
@@ -5234,6 +5627,8 @@ kbd {
           completed: state.completed,
           startedAt: state.startedAt,
           finishedAt: state.finishedAt,
+          deadlineAt: state.deadlineAt,
+          takeover: state.takeover,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       } catch (error) {
@@ -5269,11 +5664,14 @@ kbd {
       document.body.classList.toggle("is-era", name === "era");
       document.body.classList.toggle("is-result", name === "result");
       document.body.classList.toggle("is-future", name === "future");
+      document.body.classList.toggle("is-finale", name === "finale");
 
       const passport = $("#passport");
       if (passport) passport.hidden = name !== "era";
       const topProgress = $("#top-progress");
       if (topProgress) topProgress.hidden = name !== "era";
+      const countdown = $("#countdown");
+      if (countdown) countdown.hidden = name !== "era" || !state.deadlineAt || state.completed;
 
       window.scrollTo({ top: 0, behavior: prefersReduced() ? "auto" : "smooth" });
     },
@@ -5341,15 +5739,19 @@ kbd {
       track.innerHTML = CTM.eras
         .map((era, index) => {
           const done = state.stamps.includes(index);
+          const agent = done && state.takeover.includes(index);
           const current = !state.completed && index === state.eraIndex;
-          return `<div class="p-stamp ${done ? "is-done" : ""} ${current ? "is-current" : ""}" title="${escapeHtml(
+          return `<div class="p-stamp ${done ? "is-done" : ""} ${current ? "is-current" : ""} ${agent ? "is-agent" : ""}" title="${escapeHtml(
             era.label
-          )} · ${era.year}" aria-label="${escapeHtml(era.label)} ${era.year}${done ? "，已完成" : ""}">
+          )} · ${era.year}${agent ? " · Agent 接管" : ""}" aria-label="${escapeHtml(era.label)} ${era.year}${done ? "，已完成" : ""}${
+            agent ? "，由 Agent 接管" : ""
+          }">
             <span class="p-icon">${CTM.icons[era.icon] || ""}</span>
             <span class="p-meta">
               <span class="p-year">${era.year}</span>
               <span class="p-label">${escapeHtml(era.label)}</span>
             </span>
+            ${agent ? '<span class="p-agent" aria-hidden="true">AI</span>' : ""}
           </div>`;
         })
         .join("");
@@ -5372,12 +5774,13 @@ kbd {
       });
     },
 
-    recordEra(index, score, choice) {
+    recordEra(index, score, choice, takenOver) {
       if (state.stamps.includes(index)) return false;
       state.stamps.push(index);
       state.eraScores[index] = Object.assign(initialScores(), score || {});
       ui.addScore(score || {});
       state.choices[index] = choice || null;
+      if (takenOver && !state.takeover.includes(index)) state.takeover.push(index);
       CTM.storage.save();
       ui.updatePassport();
       return true;
@@ -5395,6 +5798,8 @@ kbd {
       state.completed = false;
       state.startedAt = null;
       state.finishedAt = null;
+      state.deadlineAt = null;
+      state.takeover = [];
       state.shared = false;
     },
   };
@@ -5534,6 +5939,12 @@ kbd {
 
     beep() {
       audio.tone(920, 0.09, "sine", 0.08);
+    },
+
+    /* 倒计时最后 30 秒的挂钟滴答 */
+    tick() {
+      audio.tone(1180, 0.035, "square", 0.07);
+      audio.tone(760, 0.05, "square", 0.05, 0.06);
     },
 
     /* 1804 打孔卡：机械打孔 + 织机 */
@@ -5679,8 +6090,8 @@ kbd {
               <span class="punch-letter" data-letter>B</span>
             </div>
             <div class="card-instruction">
-              <span data-derivation>B 是字母表第 2 个 · 2 写成 5 位二进制 = 00010</span>
-              每一列选一个孔：读到 <code>0</code> 打上面，读到 <code>1</code> 打下面
+              <span class="ci-derive" data-derivation>B 是字母表第 2 个 · 2 写成 5 位二进制 = 00010</span>
+              <span class="ci-how">每一列选一个孔：读到 <code>0</code> 打上面，读到 <code>1</code> 打下面</span>
             </div>
             <div class="binary-readout"><span data-target-code>00010</span></div>
             <div class="hole-grid" data-holes>${holesHtml}</div>
@@ -6049,13 +6460,19 @@ kbd {
           local.errors >= 2
             ? `<div class="hint-plan">可以照这个顺序接一遍：${SOLUTION.map((id) => INSTRUCTIONS[id].text).join(
                 " → "
-              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。</div>`
+              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。
+              <button class="hint-assist" type="button" data-assist>让 Agent 接手这一关</button></div>`
             : "";
         hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
           diagnose()
         )}</div>${plan}`;
         hintEl.hidden = false;
       };
+
+      hintEl.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-assist]") || local.running || local.locked) return;
+        api.assist();
+      });
 
       const executeInstruction = (id) => {
         switch (id) {
@@ -6394,13 +6811,19 @@ kbd {
       const showHint = (cause) => {
         const plan =
           local.errors >= 2
-            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。</div>`
+            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。
+               <button class="hint-assist" type="button" data-assist>让 Agent 接手这一关</button></div>`
             : "";
         hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
           cause
         )}</div>${plan}`;
         hintEl.hidden = false;
       };
+
+      hintEl.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-assist]") || local.locked) return;
+        api.assist();
+      });
 
       const runPipeline = () => {
         if (local.locked) return;
@@ -7296,7 +7719,7 @@ kbd {
         <div class="chat-shell">
           <div class="chat-head">TRAE · 2026<span>第 6 站 · 你的桌前</span></div>
           <div class="chat-log" data-chat>
-            <div class="msg ai"><span class="msg-avatar">AI</span><div class="msg-body">告诉我你想 Build 什么。我会把它拆成一份可以执行的计划。<em>（本地生成，不调用真实模型）</em></div></div>
+            <div class="msg ai"><span class="msg-avatar">AI</span><div class="msg-body">这次的提示词你来写。你想 Build 什么？<em>写一句你自己真的想做的东西，越具体越好。我会把它拆成一份可以执行的计划。（本地生成，不调用真实模型）</em></div></div>
           </div>
           <div class="chat-composer">
             <div class="composer-chips">
@@ -7319,14 +7742,18 @@ kbd {
                   .join("")}
               </div>
             </div>
-            <textarea class="composer-input" maxlength="60" data-prompt placeholder="例如：做一个帮室友记外卖钱的小工具"></textarea>
-            <div class="suggestion-row" data-suggestions>
-              <button class="suggestion" type="button" data-suggest="tool">做一个帮室友记外卖钱的小工具</button>
-              <button class="suggestion" type="button" data-suggest="bug">修一个只在周五出现的 Bug</button>
-              <button class="suggestion" type="button" data-suggest="story">讲一个关于 1024 的故事</button>
+            <textarea class="composer-input" maxlength="60" data-prompt placeholder="例如：做一个每天提醒我妈量血压的小工具"></textarea>
+            <div class="composer-foot">
+              <span class="composer-count" data-count>0 / 60 · 至少写 4 个字</span>
+              <span class="suggest-label">换个思路：</span>
+              <div class="suggestion-row" data-suggestions>
+                <button class="suggestion" type="button" data-suggest="tool">帮室友记外卖钱</button>
+                <button class="suggestion" type="button" data-suggest="bug">修一个只在周五出现的 Bug</button>
+                <button class="suggestion" type="button" data-suggest="story">讲一个关于 1024 的故事</button>
+              </div>
             </div>
             <div class="composer-actions">
-              <button class="btn btn-primary" type="button" data-generate>生成</button>
+              <button class="btn btn-primary" type="button" data-generate disabled>生成</button>
               <button class="btn btn-ghost" type="button" data-regen disabled>再生成一次</button>
               <button class="btn btn-ghost" type="button" data-adopt disabled>采纳这份计划</button>
               <button class="btn btn-quiet" type="button" data-sources>史料</button>
@@ -7344,6 +7771,7 @@ kbd {
       const goalsEl = root.querySelector("[data-goals]");
       const stylesEl = root.querySelector("[data-styles]");
       const promptInput = root.querySelector("[data-prompt]");
+      const countEl = root.querySelector("[data-count]");
       const suggestionsEl = root.querySelector("[data-suggestions]");
       const generateBtn = root.querySelector("[data-generate]");
       const regenBtn = root.querySelector("[data-regen]");
@@ -7377,12 +7805,34 @@ kbd {
         drawPoster(canvas, data || { goal: local.goal, style: local.style, prompt: promptInput.value.trim() || "等待你的指令。", seed: local.seed });
       };
 
+      const MIN_PROMPT = 4;
+
+      const typedLength = () => Array.from(promptInput.value.trim()).length;
+
+      const renderComposerState = () => {
+        const left = 60 - Array.from(promptInput.value).length;
+        if (countEl) {
+          countEl.textContent =
+            typedLength() < MIN_PROMPT
+              ? `还差 ${MIN_PROMPT - typedLength()} 个字才能生成 · 剩 ${left}`
+              : `可以生成了 · 剩 ${left}`;
+          countEl.classList.toggle("is-ready", typedLength() >= MIN_PROMPT);
+        }
+        if (!local.locked) generateBtn.disabled = typedLength() < MIN_PROMPT;
+      };
+
+      const onPromptInput = () => {
+        renderComposerState();
+        if (!local.generated) renderPoster();
+      };
+
       const doGenerate = (isRegen) => {
         if (local.locked) return;
-        let prompt = promptInput.value.trim();
-        if (!prompt) {
-          prompt = GOALS[local.goal].defaultPrompt;
-          promptInput.value = prompt;
+        const prompt = promptInput.value.trim();
+        if (typedLength() < MIN_PROMPT) {
+          api.toast(`再多写几个字（至少 ${MIN_PROMPT} 个）—— 这一站的提示词得是你自己的。`);
+          CTM.audio.error();
+          return;
         }
         local.seed = Math.floor(Math.random() * 1e9) + 1;
         if (isRegen) local.regenCount += 1;
@@ -7431,6 +7881,9 @@ kbd {
         promptInput.value = GOALS[local.goal].defaultPrompt;
         renderChips();
         renderPoster();
+        renderComposerState();
+        promptInput.focus();
+        if (countEl) countEl.textContent = "示例已填入 —— 改成你自己的说法更容易做";
         CTM.audio.click();
       };
 
@@ -7466,12 +7919,17 @@ kbd {
       goalsEl.addEventListener("click", onGoalClick);
       stylesEl.addEventListener("click", onStyleClick);
       suggestionsEl.addEventListener("click", onSuggestion);
+      promptInput.addEventListener("input", onPromptInput);
       generateBtn.addEventListener("click", () => doGenerate(false));
       regenBtn.addEventListener("click", () => doGenerate(true));
       adoptBtn.addEventListener("click", onAdopt);
 
       renderChips();
       renderPoster();
+      renderComposerState();
+      window.setTimeout(() => {
+        if (!local.locked && !local.cancelled) promptInput.focus({ preventScroll: true });
+      }, 400);
 
       return () => {
         local.cancelled = true;
@@ -7479,12 +7937,682 @@ kbd {
         goalsEl.removeEventListener("click", onGoalClick);
         stylesEl.removeEventListener("click", onStyleClick);
         suggestionsEl.removeEventListener("click", onSuggestion);
+        promptInput.removeEventListener("input", onPromptInput);
         generateBtn.removeEventListener("click", doGenerate);
         regenBtn.removeEventListener("click", doGenerate);
         adoptBtn.removeEventListener("click", onAdopt);
       };
     },
   });
+})(window.CTM = window.CTM || {});
+
+
+(function (CTM) {
+  "use strict";
+
+  const $ = CTM.$;
+  const sleep = CTM.utils.sleep;
+
+  const runner = { cancelled: false };
+
+  function ensureCursor() {
+    let cursor = document.getElementById("agent-cursor");
+    if (cursor) return cursor;
+    cursor = document.createElement("div");
+    cursor.id = "agent-cursor";
+    cursor.className = "agent-cursor";
+    cursor.setAttribute("aria-hidden", "true");
+    cursor.innerHTML = '<span class="ac-ring"></span><span class="ac-tag">AGENT</span>';
+    document.body.appendChild(cursor);
+    return cursor;
+  }
+
+  function hideCursor() {
+    const cursor = document.getElementById("agent-cursor");
+    if (cursor) cursor.classList.remove("is-on");
+  }
+
+  async function moveTo(el) {
+    if (!el) return;
+    const cursor = ensureCursor();
+    const rect = el.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    cursor.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+    cursor.classList.add("is-on");
+    await sleep(150);
+  }
+
+  async function tap(el) {
+    if (!el || el.disabled) return false;
+    await moveTo(el);
+    if (runner.cancelled) return false;
+    el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+    await sleep(120);
+    return true;
+  }
+
+  async function type(el, value) {
+    if (!el) return;
+    await moveTo(el);
+    el.focus();
+    let shown = "";
+    const chars = Array.from(value);
+    for (let index = 0; index < chars.length; index += 1) {
+      if (runner.cancelled) return;
+      shown += chars[index];
+      el.value = shown;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      if (index % 3 === 0) await sleep(18);
+    }
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+    await sleep(160);
+  }
+
+  async function slide(el, value) {
+    if (!el) return;
+    await moveTo(el);
+    el.value = String(value);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+    await sleep(140);
+  }
+
+  const SCRIPTS = {
+    async punch() {
+      await tap($("[data-reset]"));
+      const code = ($("[data-target-code]") || {}).textContent || "00010";
+      const holes = Array.from(document.querySelectorAll(".hole"));
+      for (let column = 0; column < 5; column += 1) {
+        const bit = code[column] === "1" ? "1" : "0";
+        await tap(holes.find((hole) => hole.dataset.col === String(column) && hole.dataset.bit === bit));
+      }
+      await tap($("[data-read]"));
+    },
+    async register() {
+      await tap($("[data-reset]"));
+      for (const id of ["loadA", "loadB", "add", "out"]) {
+        await tap(document.querySelector(`[data-instr="${id}"]`));
+      }
+      await tap($("[data-run]"));
+    },
+    async unix() {
+      await tap($("[data-reset]"));
+      for (const cmd of ["grep ERROR", "grep 500", "wc -l"]) {
+        await tap(document.querySelector(`[data-cmd="${cmd}"]`));
+      }
+      await tap($("[data-run]"));
+    },
+    async web() {
+      await tap($("[data-web-reset]"));
+      for (const block of ["title", "bio", "link", "counter"]) {
+        await tap(document.querySelector(`[data-block="${block}"]`));
+      }
+      await tap($("[data-publish]"));
+    },
+    async cloud() {
+      await tap($("[data-cloud-reset]"));
+      await slide($("[data-servers]"), 3);
+      const cache = $("[data-cache]");
+      if (cache && !cache.checked) await tap(cache.closest(".switch-row") || cache);
+      await tap($("[data-cloud-run]"));
+    },
+    async ai() {
+      const prompt = `帮 ${CTM.state.traveler || CTM.DEFAULT_TRAVELER} 把这六站的体验做成一个 1024 之前能上线的分享小工具`;
+      await type($("[data-prompt]"), prompt);
+      await tap($("[data-generate]"));
+      await sleep(400);
+      await tap($("[data-adopt]"));
+    },
+  };
+
+  async function solveEra(era) {
+    const script = SCRIPTS[era.id];
+    if (!script) return;
+    await script();
+  }
+
+  function banner(on) {
+    const el = document.getElementById("agent-banner");
+    if (!el) return;
+    el.hidden = !on;
+    if (!on) hideCursor();
+  }
+
+  async function takeover(startIndex, hooks) {
+    runner.cancelled = false;
+    CTM.agent.mode = "takeover";
+    banner(true);
+    CTM.audio.glitch();
+    for (let index = startIndex; index < CTM.eras.length; index += 1) {
+      if (runner.cancelled) break;
+      await hooks.enter(index);
+      if (runner.cancelled) break;
+      await solveEra(CTM.eras[index]);
+      await hooks.waitForStamp(index);
+      if (runner.cancelled) break;
+      await sleep(420);
+      await hooks.advance(index);
+    }
+    banner(false);
+    const cancelled = runner.cancelled;
+    runner.cancelled = false;
+    if (CTM.agent.mode === "takeover") CTM.agent.mode = "idle";
+    return cancelled;
+  }
+
+  async function assistCurrent(index) {
+    runner.cancelled = false;
+    CTM.agent.mode = "assist";
+    CTM.audio.glitch();
+    await solveEra(CTM.eras[index]);
+  }
+
+  CTM.agent = {
+    mode: "idle",
+    takeover,
+    assistCurrent,
+    cancel() {
+      runner.cancelled = true;
+      CTM.agent.mode = "idle";
+      banner(false);
+    },
+  };
+})(window.CTM = window.CTM || {});
+
+
+(function (CTM) {
+  "use strict";
+
+  const DURATION = 24000;
+  const BEATS = [
+    { to: 0.145, year: 1804, caption: "1804 · 里昂 —— 一个孔，决定一块布的花样", sound: "punch" },
+    { to: 0.29, year: 1945, caption: "1945 · 宾夕法尼亚 —— 同一个孔，成了一次通断", sound: "relay" },
+    { to: 0.44, year: 1972, caption: "1972 · 贝尔实验室 —— 孔翻成字符，字符排成工具", sound: "teletype" },
+    { to: 0.585, year: 1991, caption: "1991 · CERN —— 字符有了颜色，谁都能发一份主页", sound: "modem" },
+    { to: 0.73, year: 2007, caption: "2007 · 旧金山 —— 主页装进口袋，请求飞向机房", sound: "fan" },
+    { to: 0.9, year: 2026, caption: "2026 · 你的桌前 —— 你说一句话，机器开始动手", sound: "generate" },
+    { to: 1.001, year: null, caption: "从纸带到光标，222 年。", sound: "chime" },
+  ];
+
+  const INK = "#0a0806";
+  const MONO = '"SFMono-Regular", Consolas, "Courier New", monospace';
+  const SANS = '"PingFang SC", "Microsoft YaHei", sans-serif';
+
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const ease = (value) => (value < 0.5 ? 2 * value * value : 1 - Math.pow(-2 * value + 2, 2) / 2);
+  const sub = (start, end, value) => clamp01((value - start) / (end - start));
+
+  function circle(ctx, x, y, r, fill) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    } else {
+      ctx.stroke();
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+    }
+  }
+
+  function text(ctx, value, x, y, font, color, align) {
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = align || "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(value, x, y);
+    ctx.textAlign = "left";
+  }
+
+  /* 贯穿全片的“一个孔”：每段换一个身份，但半径和位置连续 */
+  function heroHole(ctx, x, y, r, color, glow) {
+    if (glow) {
+      const halo = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+      halo.addColorStop(0, glow);
+      halo.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = halo;
+      ctx.fillRect(x - r * 4, y - r * 4, r * 8, r * 8);
+    }
+    circle(ctx, x, y, r, color);
+  }
+
+  /* 1804：纸带 + 打孔臂 */
+  function sceneTape(ctx, w, h, p) {
+    const tapeH = Math.min(h * 0.34, 210);
+    const y = h / 2 - tapeH / 2;
+    ctx.fillStyle = "#efe6cf";
+    ctx.fillRect(0, y, w, tapeH);
+    ctx.strokeStyle = "rgba(58,47,28,0.18)";
+    ctx.lineWidth = 1;
+    for (let row = 1; row < 4; row += 1) {
+      ctx.beginPath();
+      ctx.moveTo(0, y + (tapeH / 4) * row);
+      ctx.lineTo(w, y + (tapeH / 4) * row);
+      ctx.stroke();
+    }
+
+    const step = 54;
+    const shift = -((1 - p) * w * 0.55);
+    const bits = "10010";
+    for (let column = 0; shift + column * step < w + step; column += 1) {
+      const x = shift + column * step;
+      if (x < -step) continue;
+      const punched = bits[column % 5] === "1";
+      for (let row = 0; row < 2; row += 1) {
+        const cy = y + tapeH * (row === 0 ? 0.33 : 0.67);
+        const isHero = column === 6 && row === (punched ? 0 : 1);
+        if (punched || isHero) {
+          heroHole(ctx, x, cy, 9, "rgba(20,15,8,0.92)", isHero ? "rgba(255,226,170,0.55)" : null);
+        } else {
+          circle(ctx, x, cy, 9, "rgba(58,47,28,0.12)");
+        }
+      }
+    }
+
+    const arm = 0.5 + 0.5 * Math.sin(p * Math.PI * 7);
+    const armX = shift + 6 * step;
+    ctx.fillStyle = "#8a6a3a";
+    ctx.fillRect(armX - 7, y - 96 + arm * 74, 14, 96);
+    ctx.fillStyle = "#e0a458";
+    ctx.fillRect(armX - 12, y - 100 + arm * 74, 24, 10);
+    text(ctx, "JACQUARD · 1804", 32, 46, `600 12px ${MONO}`, "rgba(242,208,164,0.55)");
+  }
+
+  /* 1945：孔变成触点 */
+  function sceneRelay(ctx, w, h, p) {
+    const close = ease(sub(0.25, 0.62, p));
+    const gap = 26 * (1 - close);
+    const cy = h / 2;
+    const cx = w / 2;
+
+    ctx.strokeStyle = "rgba(108,255,158,0.22)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 7; i += 1) {
+      const x = (w / 7) * i + 24;
+      ctx.beginPath();
+      ctx.moveTo(x, h * 0.16);
+      ctx.lineTo(x, h * 0.84);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#0b1a10";
+    ctx.strokeStyle = "rgba(108,255,158,0.4)";
+    roundRect(ctx, cx - 150, cy - 74, 300, 148, 10, "#0b1a10", "rgba(108,255,158,0.4)");
+    ctx.fillStyle = "rgba(108,255,158,0.75)";
+    ctx.fillRect(cx - 118, cy - 6, 74 - gap / 2, 12);
+    ctx.fillRect(cx + 44 + gap / 2, cy - 6, 74 - gap / 2, 12);
+    heroHole(ctx, cx, cy, 11, close ? "#b7ffd0" : "#04120a", close ? "rgba(108,255,158,0.5)" : null);
+
+    const lit = close > 0.85 ? sub(0.62, 0.95, p) : 0;
+    for (let i = 0; i < 9; i += 1) {
+      const x = cx - 128 + i * 32;
+      const on = i / 9 < lit;
+      roundRect(ctx, x - 8, h * 0.16 - 26, 16, 40, 6, on ? "#ffcf8a" : "#3a2a18", null);
+    }
+    text(ctx, "ENIAC · 1945", 32, 46, `600 12px ${MONO}`, "rgba(108,255,158,0.5)");
+  }
+
+  /* 1972：孔翻成字符 */
+  function sceneTeletype(ctx, w, h, p) {
+    const line = "WRITE PROGRAMS THAT DO ONE THING AND DO IT WELL.";
+    const shown = Math.floor(ease(sub(0.1, 0.85, p)) * line.length);
+    const size = Math.min(30, w / 26);
+    ctx.font = `700 ${size}px ${MONO}`;
+    const textW = ctx.measureText(line).width;
+    let x = w / 2 - textW / 2;
+    const y = h / 2;
+    const holeIndex = line.indexOf("ONE");
+
+    for (let i = 0; i < line.length; i += 1) {
+      const charW = ctx.measureText(line[i]).width;
+      if (i < shown) {
+        const isHole = i === holeIndex;
+        if (isHole) {
+          heroHole(ctx, x + charW / 2, y, size * 0.34, "rgba(20,15,8,0.9)", "rgba(240,198,116,0.5)");
+          ctx.strokeStyle = "#f0c674";
+          ctx.lineWidth = 2;
+          circle(ctx, x + charW / 2, y, size * 0.34);
+        } else {
+          ctx.fillStyle = "#f0c674";
+          ctx.textBaseline = "middle";
+          ctx.fillText(line[i], x, y);
+        }
+      }
+      x += charW;
+    }
+
+    ctx.fillStyle = "rgba(240,198,116,0.06)";
+    ctx.fillRect(0, y + size * 1.6, w, 2);
+    const cursor = shown < line.length && Math.floor(p * 12) % 2 === 0;
+    if (cursor) {
+      ctx.fillStyle = "#fff0c2";
+      ctx.fillRect(x, y - size * 0.45, size * 0.55, size * 0.9);
+    }
+    text(ctx, "UNIX · 1972", 32, 46, `600 12px ${MONO}`, "rgba(240,198,116,0.55)");
+  }
+
+  /* 1991：字符变成网页，孔变成计数器的一位 */
+  function sceneWeb(ctx, w, h, p) {
+    const bw = Math.min(w * 0.62, 620);
+    const bh = Math.min(h * 0.56, 330);
+    const x = w / 2 - bw / 2;
+    const y = h / 2 - bh / 2;
+    const grow = ease(sub(0.05, 0.6, p));
+
+    roundRect(ctx, x, y, bw, bh, 4, "#fff", "#8d8d8d");
+    ctx.fillStyle = "#d8d8d8";
+    ctx.fillRect(x, y, bw, 24);
+    ctx.fillStyle = "#0a2a8a";
+    ctx.fillRect(x, y, bw * grow, 24);
+    text(ctx, "Netscape Navigator", x + 10, y + 12, `600 11px ${SANS}`, "#fff");
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y + 24, bw, bh - 24);
+    ctx.clip();
+
+    const titleSize = Math.round(bh * 0.16);
+    if (grow > 0.25) {
+      text(ctx, "我的第一个主页", x + 26, y + 24 + titleSize, `700 ${titleSize}px ${SANS}`, "#000080");
+      ctx.strokeStyle = "#000080";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + 26, y + 24 + titleSize * 1.75);
+      ctx.lineTo(x + 26 + bw * 0.42, y + 24 + titleSize * 1.75);
+      ctx.stroke();
+    }
+    if (grow > 0.55) {
+      const slide = (1 - ease(sub(0.55, 1, p))) * bw;
+      text(
+        ctx,
+        "Welcome to my homepage! 本站正在建设中，欢迎常来。",
+        x + bw - slide,
+        y + bh * 0.46,
+        `600 13px ${SANS}`,
+        "#b30000"
+      );
+      ctx.strokeStyle = "rgba(179,0,0,0.35)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 26, y + bh * 0.46 - 13, bw - 52, 26);
+    }
+    if (grow > 0.75) {
+      const digits = "0001024";
+      roundRect(ctx, x + 26, y + bh - 62, 176, 34, 2, "#000", "#0a0");
+      text(ctx, "VISITORS", x + 34, y + bh - 45, `600 10px ${MONO}`, "#0f0");
+      for (let i = 0; i < digits.length; i += 1) {
+        const dx = x + 116 + i * 13;
+        if (i === 3) heroHole(ctx, dx + 4, y + bh - 45, 5, "#0f0", "rgba(0,255,0,0.45)");
+        text(ctx, digits[i], dx, y + bh - 45, `700 13px ${MONO}`, "#0f0");
+      }
+      text(ctx, "under construction", x + bw - 30, y + bh - 45, `700 11px ${MONO}`, "#111", "right");
+    }
+    ctx.restore();
+
+    text(ctx, "WWW · 1991", 32, 46, `600 12px ${MONO}`, "rgba(0,229,255,0.55)");
+  }
+
+  /* 2007：孔变成请求包 */
+  function sceneCloud(ctx, w, h, p) {
+    const cy = h / 2;
+    const phoneW = 74;
+    const phoneH = 140;
+    const px = w * 0.24;
+    roundRect(ctx, px - phoneW / 2, cy - phoneH / 2, phoneW, phoneH, 14, "#101820", "rgba(111,195,255,0.5)");
+    roundRect(ctx, px - phoneW / 2 + 7, cy - phoneH / 2 + 14, phoneW - 14, phoneH - 28, 8, "#0a2036", null);
+
+    const rackX = w * 0.62;
+    for (let i = 0; i < 4; i += 1) {
+      const on = ease(sub(0.25 + i * 0.12, 0.5 + i * 0.12, p)) > 0.5;
+      const x = rackX + i * 46;
+      roundRect(ctx, x, cy - 52, 34, 104, 5, "#0d2740", "rgba(111,195,255,0.35)");
+      ctx.fillStyle = on ? "#6cff9e" : "#28405a";
+      ctx.fillRect(x + 24, cy - 46, 5, 5);
+    }
+
+    ctx.strokeStyle = "rgba(111,195,255,0.25)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px + phoneW / 2, cy);
+    ctx.lineTo(rackX, cy);
+    ctx.stroke();
+
+    for (let i = 0; i < 6; i += 1) {
+      const t = (p * 1.5 + i / 6) % 1;
+      const x = px + phoneW / 2 + t * (rackX - px - phoneW / 2);
+      const y = cy + Math.sin(t * Math.PI) * -18;
+      heroHole(ctx, x, y, 6, "rgba(143,240,255,0.95)", "rgba(143,240,255,0.35)");
+    }
+    text(ctx, "CLOUD · 2007", 32, 46, `600 12px ${MONO}`, "rgba(111,195,255,0.6)");
+  }
+
+  /* 2026：孔变成思考中的光点，打出玩家自己写的提示词 */
+  function sceneChat(ctx, w, h, p, prompt) {
+    const cw = Math.min(w * 0.7, 660);
+    const x = w / 2 - cw / 2;
+    const shown = Math.floor(ease(sub(0.08, 0.5, p)) * prompt.length);
+    const y = h * 0.36;
+
+    roundRect(ctx, x, h * 0.2, cw, h * 0.6, 14, "rgba(255,255,255,0.035)", "rgba(143,240,255,0.28)");
+    text(ctx, "你", x + cw - 46, y - 26, `600 11px ${MONO}`, "#98a0bf", "center");
+    const line = shown < prompt.length ? prompt.slice(0, shown + 1) : prompt;
+    text(ctx, line, x + cw - 62, y, `600 15px ${SANS}`, "#eef2ff", "right");
+    if (shown < prompt.length) {
+      const caret = Math.floor(p * 10) % 2 === 0;
+      if (caret) {
+        const lw = ctx.measureText(line).width;
+        ctx.fillStyle = "#8ff0ff";
+        ctx.fillRect(x + cw - 62 - lw - 3, y - 9, 2, 18);
+      }
+    }
+
+    const reveal = sub(0.52, 0.95, p);
+    if (reveal > 0) {
+      heroHole(ctx, x + 34, y + 52, 7, "#8ff0ff", "rgba(143,240,255,0.45)");
+      text(ctx, "AI 正在拆这份计划", x + 50, y + 52, `600 12px ${SANS}`, "#98a0bf");
+      for (let i = 0; i < 4; i += 1) {
+        const on = reveal * 4 > i;
+        const ly = y + 86 + i * 26;
+        ctx.fillStyle = on ? "rgba(192,132,252,0.85)" : "rgba(192,132,252,0.16)";
+        ctx.fillRect(x + 30, ly, (cw - 70) * (on ? 1 : 0.2), 8);
+      }
+    }
+    text(ctx, "AGENT · 2026", 32, 46, `600 12px ${MONO}`, "rgba(192,132,252,0.6)");
+  }
+
+  /* 收束：六格胶片带，最左是孔，最右是光标 */
+  function sceneStrip(ctx, w, h, p) {
+    const frames = [
+      { year: "1804", tint: "#e0a458" },
+      { year: "1945", tint: "#6cff9e" },
+      { year: "1972", tint: "#f0c674" },
+      { year: "1991", tint: "#00e5ff" },
+      { year: "2007", tint: "#6fc3ff" },
+      { year: "2026", tint: "#c084fc" },
+    ];
+    const gap = 14;
+    const fw = Math.min((w - gap * 7) / 6, 150);
+    const fh = fw * 1.15;
+    const total = fw * 6 + gap * 5;
+    let x = w / 2 - total / 2;
+    const y = h / 2 - fh / 2 - 20;
+
+    frames.forEach((frame, index) => {
+      const appear = ease(sub(0.05 + index * 0.09, 0.3 + index * 0.09, p));
+      if (appear <= 0) return;
+      ctx.globalAlpha = appear;
+      roundRect(ctx, x, y, fw, fh, 8, "rgba(255,255,255,0.04)", "rgba(255,255,255,0.14)");
+      text(ctx, frame.year, x + fw / 2, y + fh - 20, `700 13px ${MONO}`, frame.tint, "center");
+      if (index === 0) heroHole(ctx, x + fw / 2, y + fh * 0.42, 9, frame.tint, "rgba(224,164,88,0.4)");
+      else if (index === 5) {
+        ctx.fillStyle = frame.tint;
+        ctx.fillRect(x + fw / 2 - 2, y + fh * 0.28, 4, fh * 0.3);
+      } else {
+        ctx.fillStyle = frame.tint;
+        ctx.globalAlpha = appear * 0.5;
+        for (let row = 0; row < 3; row += 1) ctx.fillRect(x + 16, y + 20 + row * 12, (fw - 32) * (0.4 + row * 0.2), 4);
+      }
+      ctx.globalAlpha = 1;
+      x += fw + gap;
+    });
+
+    const lineP = ease(sub(0.45, 0.85, p));
+    if (lineP > 0) {
+      const startX = w / 2 - total / 2 + fw / 2;
+      const endX = w / 2 + total / 2 - fw / 2;
+      ctx.strokeStyle = "rgba(143,240,255,0.5)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(startX, y + fh * 0.42);
+      ctx.lineTo(startX + (endX - startX) * lineP, y + fh * 0.42);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const titleA = ease(sub(0.6, 0.95, p));
+    if (titleA > 0) {
+      ctx.globalAlpha = titleA;
+      const size = Math.min(w * 0.05, 40);
+      text(ctx, "工具在变，Build 不变。", w / 2, y + fh + 62, `800 ${size}px ${SANS}`, "#eef2f8", "center");
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawFrame(ctx, w, h, t, prompt) {
+    ctx.clearRect(0, 0, w, h);
+    const bg = ctx.createLinearGradient(0, 0, w, h);
+    bg.addColorStop(0, "#05070b");
+    bg.addColorStop(1, "#0b0a14");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+
+    let index = 0;
+    while (index < BEATS.length - 1 && t > BEATS[index].to) index += 1;
+    const from = index === 0 ? 0 : BEATS[index - 1].to;
+    const local = clamp01((t - from) / (BEATS[index].to - from));
+
+    const scenes = [sceneTape, sceneRelay, sceneTeletype, sceneWeb, sceneCloud, sceneChat, sceneStrip];
+    scenes[index](ctx, w, h, local, prompt);
+
+    /* 段与段之间用“沉入黑场”交接，避免两个场景叠成脏影 */
+    const dip = ease(sub(0.88, 1, local));
+    if (dip > 0 && index < BEATS.length - 1) {
+      ctx.fillStyle = `rgba(5,7,11,${dip})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+  }
+
+  function play(prompt) {
+    return new Promise((resolve) => {
+      const screen = document.getElementById("screen-finale");
+      const canvas = document.getElementById("finale-canvas");
+      const caption = document.getElementById("finale-caption");
+      const skipBtn = document.getElementById("finale-skip");
+      if (!screen || !canvas || !caption) {
+        resolve();
+        return;
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve();
+        return;
+      }
+
+      let width = 0;
+      let height = 0;
+      const size = () => {
+        width = window.innerWidth;
+        height = Math.max(window.innerHeight, 420);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+
+      CTM.ui.setTheme("finale");
+      CTM.ui.showScreen("finale");
+      size();
+
+      const reduced = CTM.utils.prefersReduced();
+      let raf = null;
+      let done = false;
+      let lastBeat = -1;
+      let startedAt = performance.now();
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        if (raf) cancelAnimationFrame(raf);
+        skipBtn.removeEventListener("click", finish);
+        document.removeEventListener("keydown", onKey);
+        window.removeEventListener("resize", onResize);
+        resolve();
+      };
+
+      const onKey = (event) => {
+        if (event.key === "Escape" || event.key === "Enter" || event.key === " ") finish();
+      };
+
+      const onResize = () => {
+        size();
+        if (reduced) drawFrame(ctx, width, height, 1, prompt);
+      };
+
+      skipBtn.addEventListener("click", finish);
+      document.addEventListener("keydown", onKey);
+      window.addEventListener("resize", onResize);
+
+      if (reduced) {
+        caption.textContent = BEATS[BEATS.length - 1].caption;
+        drawFrame(ctx, width, height, 1, prompt);
+        window.setTimeout(finish, 1800);
+        return;
+      }
+
+      const frame = (now) => {
+        if (done) return;
+        const t = clamp01((now - startedAt) / DURATION);
+        drawFrame(ctx, width, height, t, prompt);
+
+        let index = 0;
+        while (index < BEATS.length - 1 && t > BEATS[index].to) index += 1;
+        if (index !== lastBeat) {
+          lastBeat = index;
+          caption.textContent = BEATS[index].caption;
+          caption.classList.remove("is-in");
+          void caption.offsetWidth;
+          caption.classList.add("is-in");
+          const sound = BEATS[index].sound;
+          if (sound && CTM.audio[sound]) CTM.audio[sound]();
+        }
+
+        if (t < 1) raf = requestAnimationFrame(frame);
+        else finish();
+      };
+      raf = requestAnimationFrame(frame);
+    });
+  }
+
+  CTM.finale = { play, DURATION };
 })(window.CTM = window.CTM || {});
 
 
@@ -7672,7 +8800,7 @@ kbd {
       if (tied.includes(affinity)) bestIndex = affinity;
     }
     return {
-      traveler: String(source.traveler || "匿名 Builder").slice(0, 16),
+      traveler: String(source.traveler || CTM.DEFAULT_TRAVELER).slice(0, 16),
       scores,
       eraScores,
       pct,
@@ -7684,6 +8812,7 @@ kbd {
       duration: source.duration || "—",
       ai: source.ai || null,
       stamps: Number(source.stamps) || 6,
+      takeover: Array.isArray(source.takeover) ? source.takeover.map(Number).filter((n) => n >= 0 && n < 6) : [],
       shared: Boolean(source.shared),
     };
   };
@@ -7696,6 +8825,7 @@ kbd {
       duration: CTM.utils.formatDuration(CTM.state.startedAt, CTM.state.finishedAt),
       ai: CTM.state.ai,
       stamps: CTM.state.stamps.length,
+      takeover: CTM.state.takeover,
       shared: false,
     });
 
@@ -7712,12 +8842,13 @@ kbd {
           }
         : null;
     return buildData({
-      traveler: typeof payload.n === "string" ? payload.n : "匿名 Builder",
+      traveler: typeof payload.n === "string" ? payload.n : CTM.DEFAULT_TRAVELER,
       scores: payload.s,
       eraScores: payload.e,
       duration: typeof payload.d === "string" ? payload.d : "—",
       ai,
       stamps: 6,
+      takeover: Array.isArray(payload.t) ? payload.t : [],
       shared: true,
     });
   };
@@ -8045,6 +9176,7 @@ kbd {
       s: data.scores,
       e: data.eraScores,
       d: data.duration,
+      t: data.takeover || [],
       a: data.ai
         ? {
             g: data.ai.goal,
@@ -8147,8 +9279,19 @@ kbd {
         )}</b> 的时间旅行档案。<button class="linkish" type="button" data-share-start>我也要时间旅行</button></div>`
       : "";
 
+    const agentYears = (data.takeover || [])
+      .map((index) => (CTM.eras[index] || {}).year)
+      .filter(Boolean);
+    const takeoverBanner = agentYears.length
+      ? `<div class="takeover-note">
+          <b>本局有 ${agentYears.length} 站由 Agent 接管 · ${agentYears.join(" / ")}</b>
+          <span>这几站是 AI 替你 Build 的。档案如实记录，指挥维度按接管行为计分 —— 把活交出去，也是一种 Build。</span>
+        </div>`
+      : "";
+
     return `<div class="result-shell">
       ${sharedBanner}
+      ${takeoverBanner}
       <header class="result-head">
         <div class="result-kicker">YOUR TIME TRAVEL REPORT / 2026</div>
         <h2 class="result-title" id="result-title">Builder 时间旅行档案</h2>
@@ -8296,8 +9439,96 @@ kbd {
   let futureRaf = null;
   let bootStarted = false;
   let keyBuffer = "";
+  let timerId = null;
+  let lastTickMinute = null;
+  let takingOver = false;
 
   const escapeHtml = utils.escapeHtml;
+
+  function remainingMs() {
+    if (!state.deadlineAt) return null;
+    return Math.max(0, state.deadlineAt - Date.now());
+  }
+
+  function renderCountdown() {
+    const box = $("#countdown");
+    const value = $("#countdown-value");
+    if (!box || !value) return;
+    const left = remainingMs();
+    if (left === null || state.completed) {
+      box.hidden = true;
+      return;
+    }
+    const total = Math.ceil(left / 1000);
+    box.hidden = false;
+    box.classList.toggle("is-warning", total <= 120 && total > 30);
+    box.classList.toggle("is-critical", total <= 30);
+    value.textContent = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+    return total;
+  }
+
+  function stopTimer() {
+    if (timerId) window.clearInterval(timerId);
+    timerId = null;
+  }
+
+  function startTimer() {
+    stopTimer();
+    if (!state.deadlineAt || state.completed) {
+      renderCountdown();
+      return;
+    }
+    lastTickMinute = null;
+    timerId = window.setInterval(() => {
+      const total = renderCountdown();
+      if (total === null) return;
+      if (total <= 30 && total > 0) {
+        const minute = Math.floor(total / 60);
+        if (minute !== lastTickMinute) {
+          lastTickMinute = minute;
+          audio.tick();
+        }
+      }
+      if (total <= 0) {
+        stopTimer();
+        triggerTakeover();
+      }
+    }, 250);
+    renderCountdown();
+  }
+
+  async function triggerTakeover() {
+    if (takingOver || state.completed) return;
+    takingOver = true;
+    CTM.agent.mode = "takeover";
+    const from = Math.min(state.eraIndex, ERAS.length - 1);
+    await CTM.agent.takeover(from, {
+      async enter(index) {
+        if (index !== state.eraIndex || $("#screen-era").classList.contains("is-active") === false || eraCompleted) {
+          mountEra(index);
+          await utils.sleep(260);
+        }
+      },
+      async waitForStamp(index) {
+        for (let attempt = 0; attempt < 90; attempt += 1) {
+          if (CTM.agent.mode !== "takeover") return;
+          if ($("#era-continue")) return;
+          await utils.sleep(120);
+        }
+      },
+      async advance(index) {
+        if (index >= ERAS.length - 1) {
+          await finishJourney();
+          return;
+        }
+        await playTunnel(ERAS[index].year, ERAS[index + 1].year, `AGENT · 前往 ${ERAS[index + 1].year}`, 900);
+        mountEra(index + 1);
+        await utils.sleep(240);
+      },
+    });
+    takingOver = false;
+    if (!state.completed) startTimer();
+  }
 
   function restoreSaved() {
     const saved = CTM.storage.load();
@@ -8331,6 +9562,10 @@ kbd {
     });
     state.choices = saved.choices && typeof saved.choices === "object" ? saved.choices : {};
     state.ai = saved.ai && typeof saved.ai === "object" ? saved.ai : null;
+    state.deadlineAt = Number(saved.deadlineAt) || null;
+    state.takeover = Array.isArray(saved.takeover)
+      ? saved.takeover.map(Number).filter((value) => Number.isInteger(value) && value >= 0 && value < ERAS.length)
+      : [];
     state.sound = Number(saved.v) >= 2 ? Boolean(saved.sound) : true;
     state.started = Boolean(saved.started) || state.stamps.length > 0 || Boolean(saved.completed);
     state.completed = Boolean(saved.completed) || state.stamps.length >= ERAS.length;
@@ -8362,7 +9597,7 @@ kbd {
     } else {
       button.textContent = `继续上次旅行（第 ${Math.min(state.eraIndex + 1, ERAS.length)} 站）`;
     }
-    meta.textContent = `${state.traveler || "匿名 Builder"} · ${state.stamps.length}/${ERAS.length} 枚印章`;
+    meta.textContent = `${state.traveler || CTM.DEFAULT_TRAVELER} · ${state.stamps.length}/${ERAS.length} 枚印章`;
   }
 
   function typeBootLog() {
@@ -8616,6 +9851,7 @@ kbd {
     }
 
     eraCompleted = false;
+    if (CTM.agent.mode !== "takeover") CTM.agent.mode = "idle";
     state.eraIndex = index;
     state.started = true;
     if (!state.startedAt) state.startedAt = Date.now();
@@ -8637,6 +9873,9 @@ kbd {
       toast: ui.toast,
       openSources() {
         openSources(era);
+      },
+      assist() {
+        CTM.agent.assistCurrent(index);
       },
       complete(score, choice, options) {
         completeEra(index, score, choice, options || {});
@@ -8689,8 +9928,7 @@ kbd {
       const nextEra = ERAS[nextIndex];
       removeContinueCard();
       if (isLast) {
-        await playTunnel(era.year, 2026, "正在编译你的时间旅行档案");
-        showResultFromState();
+        await finishJourney();
       } else {
         await playTunnel(era.year, nextEra.year, `正在前往 ${nextEra.year} · ${nextEra.label}`);
         mountEra(nextIndex);
@@ -8699,10 +9937,26 @@ kbd {
     window.setTimeout(() => button.focus({ preventScroll: true }), 60);
   }
 
+  async function finishJourney() {
+    stopTimer();
+    state.eraIndex = ERAS.length;
+    state.completed = true;
+    if (!state.finishedAt) state.finishedAt = Date.now();
+    CTM.storage.save();
+    const prompt = state.ai && state.ai.prompt ? state.ai.prompt : "";
+    await CTM.finale.play(prompt);
+    showResultFromState();
+  }
+
   function completeEra(index, score, choice, options) {
     if (eraCompleted) return;
-    if (!ui.recordEra(index, score, choice)) return;
+    const takenOver = CTM.agent.mode !== "idle";
+    const finalScore = takenOver
+      ? Object.assign({}, score, { direction: (Number(score && score.direction) || 0) + 3 })
+      : score;
+    if (!ui.recordEra(index, finalScore, choice, takenOver)) return;
     eraCompleted = true;
+    if (CTM.agent.mode === "assist") CTM.agent.mode = "idle";
 
     const era = ERAS[index];
     const nextIndex = index + 1;
@@ -8730,6 +9984,7 @@ kbd {
   }
 
   function showResultFromState() {
+    stopTimer();
     if (currentCleanup) {
       currentCleanup();
       currentCleanup = null;
@@ -8775,6 +10030,7 @@ kbd {
   function goHome() {
     ui.closeModal();
     removeContinueCard();
+    stopTimer();
     stopFutureParticles();
     if (currentCleanup) {
       currentCleanup();
@@ -8793,6 +10049,9 @@ kbd {
   function resetAndHome() {
     ui.closeModal();
     removeContinueCard();
+    stopTimer();
+    CTM.agent.mode = "idle";
+    CTM.agent.cancel();
     stopFutureParticles();
     if (currentCleanup) {
       currentCleanup();
@@ -8827,8 +10086,12 @@ kbd {
       <div class="help-content">
         <p>每一站是一间不同的房间：1804 的织机工坊、1945 的控制台、1972 的电传机、1991 的桌面、2007 的云仪表盘、2026 的对话框。30-60 秒可完成一站，完成后护照上会多一枚印章。</p>
         <ul class="help-list">
+          <li>全程限时 <b>1024 秒</b>，从你按下“启动时间机器”开始算。顶栏右侧有倒计时。</li>
+          <li>时间用完会自动进入 <b>Agent 接管</b>：AI 接手剩下的站，把答案接给你看。档案会如实写明哪几站是它替你 Build 的，指挥维度按接管行为计分 —— 你也可以随时点“我来”拿回控制权。</li>
+          <li>在 1945 和 1972 连续答错两次，提示面板里会出现“让 Agent 接手这一关”。</li>
+          <li>通关后会有一段 24 秒的结尾动画：同一个孔，从 1804 年的纸带一路变成 2026 年的光标。</li>
           <li>全部交互都可以用鼠标或键盘完成，不依赖拖拽。</li>
-          <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇。右上角可以随时静音。</li>
+          <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇、生成提示音。右上角可以随时静音。</li>
           <li>最后一站会生成你的 Builder 类型、四维雷达和一张可下载的海报。</li>
           <li>所有数据只保存在你的浏览器里，不会上传。</li>
           <li>AI 时代使用本地生成模拟，不调用真实大模型，也不消耗 API Key。</li>
@@ -8867,6 +10130,7 @@ kbd {
     state.startedAt = Date.now();
     state.eraIndex = 0;
     state.completed = false;
+    state.deadlineAt = Date.now() + CTM.TIME_LIMIT_MS;
     CTM.storage.save();
     if (window.location.hash) {
       history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -8877,6 +10141,7 @@ kbd {
     audio.click();
     await playTunnel(2026, ERAS[0].year, "正在校准时间坐标 · 1804", 2400);
     mountEra(0);
+    startTimer();
     starting = false;
     if (startButton) startButton.disabled = false;
   }
@@ -8885,7 +10150,7 @@ kbd {
     event.preventDefault();
     if (starting) return;
     const input = $("#traveler");
-    const name = (input && input.value.trim()) || "匿名 Builder";
+    const name = (input && input.value.trim()) || CTM.DEFAULT_TRAVELER;
     if (state.started && state.stamps.length > 0) {
       ui.modal(
         `<button class="modal-close" type="button" data-modal-close aria-label="关闭">×</button>
@@ -8932,6 +10197,8 @@ kbd {
     mountEra(state.eraIndex);
     starting = false;
     if (button) button.disabled = false;
+    startTimer();
+    if (remainingMs() === 0) triggerTakeover();
   }
 
   function leaveFuture() {
@@ -9095,6 +10362,17 @@ kbd {
     if (restart) restart.addEventListener("click", resetAndHome);
     const futureBack = $("#future-back");
     if (futureBack) futureBack.addEventListener("click", leaveFuture);
+    const agentCancel = $("#agent-cancel");
+    if (agentCancel) {
+      agentCancel.addEventListener("click", () => {
+        CTM.agent.cancel();
+        takingOver = false;
+        removeContinueCard();
+        mountEra(Math.min(state.eraIndex, ERAS.length - 1));
+        startTimer();
+        ui.toast("时间还给你。剩下的自己来。");
+      });
+    }
 
     document.addEventListener("keydown", (event) => {
       if (event.ctrlKey || event.metaKey || event.altKey) return;

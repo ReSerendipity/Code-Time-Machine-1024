@@ -209,7 +209,7 @@
         <div class="chat-shell">
           <div class="chat-head">TRAE · 2026<span>第 6 站 · 你的桌前</span></div>
           <div class="chat-log" data-chat>
-            <div class="msg ai"><span class="msg-avatar">AI</span><div class="msg-body">告诉我你想 Build 什么。我会把它拆成一份可以执行的计划。<em>（本地生成，不调用真实模型）</em></div></div>
+            <div class="msg ai"><span class="msg-avatar">AI</span><div class="msg-body">这次的提示词你来写。你想 Build 什么？<em>写一句你自己真的想做的东西，越具体越好。我会把它拆成一份可以执行的计划。（本地生成，不调用真实模型）</em></div></div>
           </div>
           <div class="chat-composer">
             <div class="composer-chips">
@@ -232,14 +232,18 @@
                   .join("")}
               </div>
             </div>
-            <textarea class="composer-input" maxlength="60" data-prompt placeholder="例如：做一个帮室友记外卖钱的小工具"></textarea>
-            <div class="suggestion-row" data-suggestions>
-              <button class="suggestion" type="button" data-suggest="tool">做一个帮室友记外卖钱的小工具</button>
-              <button class="suggestion" type="button" data-suggest="bug">修一个只在周五出现的 Bug</button>
-              <button class="suggestion" type="button" data-suggest="story">讲一个关于 1024 的故事</button>
+            <textarea class="composer-input" maxlength="60" data-prompt placeholder="例如：做一个每天提醒我妈量血压的小工具"></textarea>
+            <div class="composer-foot">
+              <span class="composer-count" data-count>0 / 60 · 至少写 4 个字</span>
+              <span class="suggest-label">换个思路：</span>
+              <div class="suggestion-row" data-suggestions>
+                <button class="suggestion" type="button" data-suggest="tool">帮室友记外卖钱</button>
+                <button class="suggestion" type="button" data-suggest="bug">修一个只在周五出现的 Bug</button>
+                <button class="suggestion" type="button" data-suggest="story">讲一个关于 1024 的故事</button>
+              </div>
             </div>
             <div class="composer-actions">
-              <button class="btn btn-primary" type="button" data-generate>生成</button>
+              <button class="btn btn-primary" type="button" data-generate disabled>生成</button>
               <button class="btn btn-ghost" type="button" data-regen disabled>再生成一次</button>
               <button class="btn btn-ghost" type="button" data-adopt disabled>采纳这份计划</button>
               <button class="btn btn-quiet" type="button" data-sources>史料</button>
@@ -257,6 +261,7 @@
       const goalsEl = root.querySelector("[data-goals]");
       const stylesEl = root.querySelector("[data-styles]");
       const promptInput = root.querySelector("[data-prompt]");
+      const countEl = root.querySelector("[data-count]");
       const suggestionsEl = root.querySelector("[data-suggestions]");
       const generateBtn = root.querySelector("[data-generate]");
       const regenBtn = root.querySelector("[data-regen]");
@@ -290,12 +295,34 @@
         drawPoster(canvas, data || { goal: local.goal, style: local.style, prompt: promptInput.value.trim() || "等待你的指令。", seed: local.seed });
       };
 
+      const MIN_PROMPT = 4;
+
+      const typedLength = () => Array.from(promptInput.value.trim()).length;
+
+      const renderComposerState = () => {
+        const left = 60 - Array.from(promptInput.value).length;
+        if (countEl) {
+          countEl.textContent =
+            typedLength() < MIN_PROMPT
+              ? `还差 ${MIN_PROMPT - typedLength()} 个字才能生成 · 剩 ${left}`
+              : `可以生成了 · 剩 ${left}`;
+          countEl.classList.toggle("is-ready", typedLength() >= MIN_PROMPT);
+        }
+        if (!local.locked) generateBtn.disabled = typedLength() < MIN_PROMPT;
+      };
+
+      const onPromptInput = () => {
+        renderComposerState();
+        if (!local.generated) renderPoster();
+      };
+
       const doGenerate = (isRegen) => {
         if (local.locked) return;
-        let prompt = promptInput.value.trim();
-        if (!prompt) {
-          prompt = GOALS[local.goal].defaultPrompt;
-          promptInput.value = prompt;
+        const prompt = promptInput.value.trim();
+        if (typedLength() < MIN_PROMPT) {
+          api.toast(`再多写几个字（至少 ${MIN_PROMPT} 个）—— 这一站的提示词得是你自己的。`);
+          CTM.audio.error();
+          return;
         }
         local.seed = Math.floor(Math.random() * 1e9) + 1;
         if (isRegen) local.regenCount += 1;
@@ -344,6 +371,9 @@
         promptInput.value = GOALS[local.goal].defaultPrompt;
         renderChips();
         renderPoster();
+        renderComposerState();
+        promptInput.focus();
+        if (countEl) countEl.textContent = "示例已填入 —— 改成你自己的说法更容易做";
         CTM.audio.click();
       };
 
@@ -379,12 +409,17 @@
       goalsEl.addEventListener("click", onGoalClick);
       stylesEl.addEventListener("click", onStyleClick);
       suggestionsEl.addEventListener("click", onSuggestion);
+      promptInput.addEventListener("input", onPromptInput);
       generateBtn.addEventListener("click", () => doGenerate(false));
       regenBtn.addEventListener("click", () => doGenerate(true));
       adoptBtn.addEventListener("click", onAdopt);
 
       renderChips();
       renderPoster();
+      renderComposerState();
+      window.setTimeout(() => {
+        if (!local.locked && !local.cancelled) promptInput.focus({ preventScroll: true });
+      }, 400);
 
       return () => {
         local.cancelled = true;
@@ -392,6 +427,7 @@
         goalsEl.removeEventListener("click", onGoalClick);
         stylesEl.removeEventListener("click", onStyleClick);
         suggestionsEl.removeEventListener("click", onSuggestion);
+        promptInput.removeEventListener("input", onPromptInput);
         generateBtn.removeEventListener("click", doGenerate);
         regenBtn.removeEventListener("click", doGenerate);
         adoptBtn.removeEventListener("click", onAdopt);

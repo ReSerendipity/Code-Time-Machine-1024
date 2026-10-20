@@ -50,8 +50,8 @@
               <span class="punch-letter" data-letter>B</span>
             </div>
             <div class="card-instruction">
-              <span data-derivation>B 是字母表第 2 个 · 2 写成 5 位二进制 = 00010</span>
-              每一列选一个孔：读到 <code>0</code> 打上面，读到 <code>1</code> 打下面
+              <span class="ci-derive" data-derivation>B 是字母表第 2 个 · 2 写成 5 位二进制 = 00010</span>
+              <span class="ci-how">每一列选一个孔：读到 <code>0</code> 打上面，读到 <code>1</code> 打下面</span>
             </div>
             <div class="binary-readout"><span data-target-code>00010</span></div>
             <div class="hole-grid" data-holes>${holesHtml}</div>

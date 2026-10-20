@@ -17,8 +17,96 @@
   let futureRaf = null;
   let bootStarted = false;
   let keyBuffer = "";
+  let timerId = null;
+  let lastTickMinute = null;
+  let takingOver = false;
 
   const escapeHtml = utils.escapeHtml;
+
+  function remainingMs() {
+    if (!state.deadlineAt) return null;
+    return Math.max(0, state.deadlineAt - Date.now());
+  }
+
+  function renderCountdown() {
+    const box = $("#countdown");
+    const value = $("#countdown-value");
+    if (!box || !value) return;
+    const left = remainingMs();
+    if (left === null || state.completed) {
+      box.hidden = true;
+      return;
+    }
+    const total = Math.ceil(left / 1000);
+    box.hidden = false;
+    box.classList.toggle("is-warning", total <= 120 && total > 30);
+    box.classList.toggle("is-critical", total <= 30);
+    value.textContent = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+    return total;
+  }
+
+  function stopTimer() {
+    if (timerId) window.clearInterval(timerId);
+    timerId = null;
+  }
+
+  function startTimer() {
+    stopTimer();
+    if (!state.deadlineAt || state.completed) {
+      renderCountdown();
+      return;
+    }
+    lastTickMinute = null;
+    timerId = window.setInterval(() => {
+      const total = renderCountdown();
+      if (total === null) return;
+      if (total <= 30 && total > 0) {
+        const minute = Math.floor(total / 60);
+        if (minute !== lastTickMinute) {
+          lastTickMinute = minute;
+          audio.tick();
+        }
+      }
+      if (total <= 0) {
+        stopTimer();
+        triggerTakeover();
+      }
+    }, 250);
+    renderCountdown();
+  }
+
+  async function triggerTakeover() {
+    if (takingOver || state.completed) return;
+    takingOver = true;
+    CTM.agent.mode = "takeover";
+    const from = Math.min(state.eraIndex, ERAS.length - 1);
+    await CTM.agent.takeover(from, {
+      async enter(index) {
+        if (index !== state.eraIndex || $("#screen-era").classList.contains("is-active") === false || eraCompleted) {
+          mountEra(index);
+          await utils.sleep(260);
+        }
+      },
+      async waitForStamp(index) {
+        for (let attempt = 0; attempt < 90; attempt += 1) {
+          if (CTM.agent.mode !== "takeover") return;
+          if ($("#era-continue")) return;
+          await utils.sleep(120);
+        }
+      },
+      async advance(index) {
+        if (index >= ERAS.length - 1) {
+          await finishJourney();
+          return;
+        }
+        await playTunnel(ERAS[index].year, ERAS[index + 1].year, `AGENT · 前往 ${ERAS[index + 1].year}`, 900);
+        mountEra(index + 1);
+        await utils.sleep(240);
+      },
+    });
+    takingOver = false;
+    if (!state.completed) startTimer();
+  }
 
   function restoreSaved() {
     const saved = CTM.storage.load();
@@ -52,6 +140,10 @@
     });
     state.choices = saved.choices && typeof saved.choices === "object" ? saved.choices : {};
     state.ai = saved.ai && typeof saved.ai === "object" ? saved.ai : null;
+    state.deadlineAt = Number(saved.deadlineAt) || null;
+    state.takeover = Array.isArray(saved.takeover)
+      ? saved.takeover.map(Number).filter((value) => Number.isInteger(value) && value >= 0 && value < ERAS.length)
+      : [];
     state.sound = Number(saved.v) >= 2 ? Boolean(saved.sound) : true;
     state.started = Boolean(saved.started) || state.stamps.length > 0 || Boolean(saved.completed);
     state.completed = Boolean(saved.completed) || state.stamps.length >= ERAS.length;
@@ -83,7 +175,7 @@
     } else {
       button.textContent = `继续上次旅行（第 ${Math.min(state.eraIndex + 1, ERAS.length)} 站）`;
     }
-    meta.textContent = `${state.traveler || "匿名 Builder"} · ${state.stamps.length}/${ERAS.length} 枚印章`;
+    meta.textContent = `${state.traveler || CTM.DEFAULT_TRAVELER} · ${state.stamps.length}/${ERAS.length} 枚印章`;
   }
 
   function typeBootLog() {
@@ -337,6 +429,7 @@
     }
 
     eraCompleted = false;
+    if (CTM.agent.mode !== "takeover") CTM.agent.mode = "idle";
     state.eraIndex = index;
     state.started = true;
     if (!state.startedAt) state.startedAt = Date.now();
@@ -358,6 +451,9 @@
       toast: ui.toast,
       openSources() {
         openSources(era);
+      },
+      assist() {
+        CTM.agent.assistCurrent(index);
       },
       complete(score, choice, options) {
         completeEra(index, score, choice, options || {});
@@ -410,8 +506,7 @@
       const nextEra = ERAS[nextIndex];
       removeContinueCard();
       if (isLast) {
-        await playTunnel(era.year, 2026, "正在编译你的时间旅行档案");
-        showResultFromState();
+        await finishJourney();
       } else {
         await playTunnel(era.year, nextEra.year, `正在前往 ${nextEra.year} · ${nextEra.label}`);
         mountEra(nextIndex);
@@ -420,10 +515,26 @@
     window.setTimeout(() => button.focus({ preventScroll: true }), 60);
   }
 
+  async function finishJourney() {
+    stopTimer();
+    state.eraIndex = ERAS.length;
+    state.completed = true;
+    if (!state.finishedAt) state.finishedAt = Date.now();
+    CTM.storage.save();
+    const prompt = state.ai && state.ai.prompt ? state.ai.prompt : "";
+    await CTM.finale.play(prompt);
+    showResultFromState();
+  }
+
   function completeEra(index, score, choice, options) {
     if (eraCompleted) return;
-    if (!ui.recordEra(index, score, choice)) return;
+    const takenOver = CTM.agent.mode !== "idle";
+    const finalScore = takenOver
+      ? Object.assign({}, score, { direction: (Number(score && score.direction) || 0) + 3 })
+      : score;
+    if (!ui.recordEra(index, finalScore, choice, takenOver)) return;
     eraCompleted = true;
+    if (CTM.agent.mode === "assist") CTM.agent.mode = "idle";
 
     const era = ERAS[index];
     const nextIndex = index + 1;
@@ -451,6 +562,7 @@
   }
 
   function showResultFromState() {
+    stopTimer();
     if (currentCleanup) {
       currentCleanup();
       currentCleanup = null;
@@ -496,6 +608,7 @@
   function goHome() {
     ui.closeModal();
     removeContinueCard();
+    stopTimer();
     stopFutureParticles();
     if (currentCleanup) {
       currentCleanup();
@@ -514,6 +627,9 @@
   function resetAndHome() {
     ui.closeModal();
     removeContinueCard();
+    stopTimer();
+    CTM.agent.mode = "idle";
+    CTM.agent.cancel();
     stopFutureParticles();
     if (currentCleanup) {
       currentCleanup();
@@ -548,8 +664,12 @@
       <div class="help-content">
         <p>每一站是一间不同的房间：1804 的织机工坊、1945 的控制台、1972 的电传机、1991 的桌面、2007 的云仪表盘、2026 的对话框。30-60 秒可完成一站，完成后护照上会多一枚印章。</p>
         <ul class="help-list">
+          <li>全程限时 <b>1024 秒</b>，从你按下“启动时间机器”开始算。顶栏右侧有倒计时。</li>
+          <li>时间用完会自动进入 <b>Agent 接管</b>：AI 接手剩下的站，把答案接给你看。档案会如实写明哪几站是它替你 Build 的，指挥维度按接管行为计分 —— 你也可以随时点“我来”拿回控制权。</li>
+          <li>在 1945 和 1972 连续答错两次，提示面板里会出现“让 Agent 接手这一关”。</li>
+          <li>通关后会有一段 24 秒的结尾动画：同一个孔，从 1804 年的纸带一路变成 2026 年的光标。</li>
           <li>全部交互都可以用鼠标或键盘完成，不依赖拖拽。</li>
-          <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇。右上角可以随时静音。</li>
+          <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇、生成提示音。右上角可以随时静音。</li>
           <li>最后一站会生成你的 Builder 类型、四维雷达和一张可下载的海报。</li>
           <li>所有数据只保存在你的浏览器里，不会上传。</li>
           <li>AI 时代使用本地生成模拟，不调用真实大模型，也不消耗 API Key。</li>
@@ -588,6 +708,7 @@
     state.startedAt = Date.now();
     state.eraIndex = 0;
     state.completed = false;
+    state.deadlineAt = Date.now() + CTM.TIME_LIMIT_MS;
     CTM.storage.save();
     if (window.location.hash) {
       history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -598,6 +719,7 @@
     audio.click();
     await playTunnel(2026, ERAS[0].year, "正在校准时间坐标 · 1804", 2400);
     mountEra(0);
+    startTimer();
     starting = false;
     if (startButton) startButton.disabled = false;
   }
@@ -606,7 +728,7 @@
     event.preventDefault();
     if (starting) return;
     const input = $("#traveler");
-    const name = (input && input.value.trim()) || "匿名 Builder";
+    const name = (input && input.value.trim()) || CTM.DEFAULT_TRAVELER;
     if (state.started && state.stamps.length > 0) {
       ui.modal(
         `<button class="modal-close" type="button" data-modal-close aria-label="关闭">×</button>
@@ -653,6 +775,8 @@
     mountEra(state.eraIndex);
     starting = false;
     if (button) button.disabled = false;
+    startTimer();
+    if (remainingMs() === 0) triggerTakeover();
   }
 
   function leaveFuture() {
@@ -816,6 +940,17 @@
     if (restart) restart.addEventListener("click", resetAndHome);
     const futureBack = $("#future-back");
     if (futureBack) futureBack.addEventListener("click", leaveFuture);
+    const agentCancel = $("#agent-cancel");
+    if (agentCancel) {
+      agentCancel.addEventListener("click", () => {
+        CTM.agent.cancel();
+        takingOver = false;
+        removeContinueCard();
+        mountEra(Math.min(state.eraIndex, ERAS.length - 1));
+        startTimer();
+        ui.toast("时间还给你。剩下的自己来。");
+      });
+    }
 
     document.addEventListener("keydown", (event) => {
       if (event.ctrlKey || event.metaKey || event.altKey) return;

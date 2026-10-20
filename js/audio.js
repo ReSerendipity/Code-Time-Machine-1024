@@ -131,6 +131,12 @@
       audio.tone(920, 0.09, "sine", 0.08);
     },
 
+    /* 倒计时最后 30 秒的挂钟滴答 */
+    tick() {
+      audio.tone(1180, 0.035, "square", 0.07);
+      audio.tone(760, 0.05, "square", 0.05, 0.06);
+    },
+
     /* 1804 打孔卡：机械打孔 + 织机 */
     punch() {
       audio.noise(0.05, 0.22, 0, 2600, "highpass");

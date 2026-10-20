@@ -54,6 +54,9 @@
 
   const initialScores = () => ({ manual: 0, systems: 0, expression: 0, direction: 0 });
 
+  const TIME_LIMIT_MS = 1024 * 1000;
+  const DEFAULT_TRAVELER = "TRAE Builder";
+
   const state = {
     traveler: "",
     eraIndex: 0,
@@ -67,6 +70,8 @@
     completed: false,
     startedAt: null,
     finishedAt: null,
+    deadlineAt: null,
+    takeover: [],
     shared: false,
   };
 
@@ -74,6 +79,8 @@
   CTM.$$ = $$;
   CTM.state = state;
   CTM.eras = CTM.eras || [];
+  CTM.TIME_LIMIT_MS = TIME_LIMIT_MS;
+  CTM.DEFAULT_TRAVELER = DEFAULT_TRAVELER;
   CTM.utils = {
     clamp,
     sleep,
@@ -107,7 +114,7 @@
     save() {
       try {
         const payload = {
-          v: 2,
+          v: 3,
           traveler: state.traveler,
           eraIndex: state.eraIndex,
           stamps: state.stamps,
@@ -120,6 +127,8 @@
           completed: state.completed,
           startedAt: state.startedAt,
           finishedAt: state.finishedAt,
+          deadlineAt: state.deadlineAt,
+          takeover: state.takeover,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       } catch (error) {
@@ -155,11 +164,14 @@
       document.body.classList.toggle("is-era", name === "era");
       document.body.classList.toggle("is-result", name === "result");
       document.body.classList.toggle("is-future", name === "future");
+      document.body.classList.toggle("is-finale", name === "finale");
 
       const passport = $("#passport");
       if (passport) passport.hidden = name !== "era";
       const topProgress = $("#top-progress");
       if (topProgress) topProgress.hidden = name !== "era";
+      const countdown = $("#countdown");
+      if (countdown) countdown.hidden = name !== "era" || !state.deadlineAt || state.completed;
 
       window.scrollTo({ top: 0, behavior: prefersReduced() ? "auto" : "smooth" });
     },
@@ -227,15 +239,19 @@
       track.innerHTML = CTM.eras
         .map((era, index) => {
           const done = state.stamps.includes(index);
+          const agent = done && state.takeover.includes(index);
           const current = !state.completed && index === state.eraIndex;
-          return `<div class="p-stamp ${done ? "is-done" : ""} ${current ? "is-current" : ""}" title="${escapeHtml(
+          return `<div class="p-stamp ${done ? "is-done" : ""} ${current ? "is-current" : ""} ${agent ? "is-agent" : ""}" title="${escapeHtml(
             era.label
-          )} · ${era.year}" aria-label="${escapeHtml(era.label)} ${era.year}${done ? "，已完成" : ""}">
+          )} · ${era.year}${agent ? " · Agent 接管" : ""}" aria-label="${escapeHtml(era.label)} ${era.year}${done ? "，已完成" : ""}${
+            agent ? "，由 Agent 接管" : ""
+          }">
             <span class="p-icon">${CTM.icons[era.icon] || ""}</span>
             <span class="p-meta">
               <span class="p-year">${era.year}</span>
               <span class="p-label">${escapeHtml(era.label)}</span>
             </span>
+            ${agent ? '<span class="p-agent" aria-hidden="true">AI</span>' : ""}
           </div>`;
         })
         .join("");
@@ -258,12 +274,13 @@
       });
     },
 
-    recordEra(index, score, choice) {
+    recordEra(index, score, choice, takenOver) {
       if (state.stamps.includes(index)) return false;
       state.stamps.push(index);
       state.eraScores[index] = Object.assign(initialScores(), score || {});
       ui.addScore(score || {});
       state.choices[index] = choice || null;
+      if (takenOver && !state.takeover.includes(index)) state.takeover.push(index);
       CTM.storage.save();
       ui.updatePassport();
       return true;
@@ -281,6 +298,8 @@
       state.completed = false;
       state.startedAt = null;
       state.finishedAt = null;
+      state.deadlineAt = null;
+      state.takeover = [];
       state.shared = false;
     },
   };

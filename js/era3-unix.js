@@ -135,13 +135,19 @@
       const showHint = (cause) => {
         const plan =
           local.errors >= 2
-            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。</div>`
+            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。
+               <button class="hint-assist" type="button" data-assist>让 Agent 接手这一关</button></div>`
             : "";
         hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
           cause
         )}</div>${plan}`;
         hintEl.hidden = false;
       };
+
+      hintEl.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-assist]") || local.locked) return;
+        api.assist();
+      });
 
       const runPipeline = () => {
         if (local.locked) return;

@@ -182,7 +182,7 @@
       if (tied.includes(affinity)) bestIndex = affinity;
     }
     return {
-      traveler: String(source.traveler || "匿名 Builder").slice(0, 16),
+      traveler: String(source.traveler || CTM.DEFAULT_TRAVELER).slice(0, 16),
       scores,
       eraScores,
       pct,
@@ -194,6 +194,7 @@
       duration: source.duration || "—",
       ai: source.ai || null,
       stamps: Number(source.stamps) || 6,
+      takeover: Array.isArray(source.takeover) ? source.takeover.map(Number).filter((n) => n >= 0 && n < 6) : [],
       shared: Boolean(source.shared),
     };
   };
@@ -206,6 +207,7 @@
       duration: CTM.utils.formatDuration(CTM.state.startedAt, CTM.state.finishedAt),
       ai: CTM.state.ai,
       stamps: CTM.state.stamps.length,
+      takeover: CTM.state.takeover,
       shared: false,
     });
 
@@ -222,12 +224,13 @@
           }
         : null;
     return buildData({
-      traveler: typeof payload.n === "string" ? payload.n : "匿名 Builder",
+      traveler: typeof payload.n === "string" ? payload.n : CTM.DEFAULT_TRAVELER,
       scores: payload.s,
       eraScores: payload.e,
       duration: typeof payload.d === "string" ? payload.d : "—",
       ai,
       stamps: 6,
+      takeover: Array.isArray(payload.t) ? payload.t : [],
       shared: true,
     });
   };
@@ -555,6 +558,7 @@
       s: data.scores,
       e: data.eraScores,
       d: data.duration,
+      t: data.takeover || [],
       a: data.ai
         ? {
             g: data.ai.goal,
@@ -657,8 +661,19 @@
         )}</b> 的时间旅行档案。<button class="linkish" type="button" data-share-start>我也要时间旅行</button></div>`
       : "";
 
+    const agentYears = (data.takeover || [])
+      .map((index) => (CTM.eras[index] || {}).year)
+      .filter(Boolean);
+    const takeoverBanner = agentYears.length
+      ? `<div class="takeover-note">
+          <b>本局有 ${agentYears.length} 站由 Agent 接管 · ${agentYears.join(" / ")}</b>
+          <span>这几站是 AI 替你 Build 的。档案如实记录，指挥维度按接管行为计分 —— 把活交出去，也是一种 Build。</span>
+        </div>`
+      : "";
+
     return `<div class="result-shell">
       ${sharedBanner}
+      ${takeoverBanner}
       <header class="result-head">
         <div class="result-kicker">YOUR TIME TRAVEL REPORT / 2026</div>
         <h2 class="result-title" id="result-title">Builder 时间旅行档案</h2>

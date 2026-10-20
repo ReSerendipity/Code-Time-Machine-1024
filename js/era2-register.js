@@ -213,13 +213,19 @@
           local.errors >= 2
             ? `<div class="hint-plan">可以照这个顺序接一遍：${SOLUTION.map((id) => INSTRUCTIONS[id].text).join(
                 " → "
-              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。</div>`
+              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。
+              <button class="hint-assist" type="button" data-assist>让 Agent 接手这一关</button></div>`
             : "";
         hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
           diagnose()
         )}</div>${plan}`;
         hintEl.hidden = false;
       };
+
+      hintEl.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-assist]") || local.running || local.locked) return;
+        api.assist();
+      });
 
       const executeInstruction = (id) => {
         switch (id) {
