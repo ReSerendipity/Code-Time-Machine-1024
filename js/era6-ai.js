@@ -11,31 +11,55 @@
     tool: {
       label: "做工具",
       defaultPrompt: "做一个帮室友记外卖钱的小工具",
-      steps: (prompt) => [
-        `先写一句验收标准：「${prompt}」做到什么算完成。`,
-        "只做最小闭环：一个入口、一个核心动作、一个结果页。",
-        "用 localStorage 存数据，先不接后端；找 3 个真实用户试用。",
-        "在 1024 之前上线，把反馈写进下一版。",
+      plans: [
+        (prompt) => [
+          `先写一句验收标准：「${prompt}」做到什么算完成。`,
+          "只做最小闭环：一个入口、一个核心动作、一个结果页。",
+          "用 localStorage 存数据，先不接后端；找 3 个真实用户试用。",
+          "在 1024 之前上线，把反馈写进下一版。",
+        ],
+        (prompt) => [
+          `先找出最烦人的那一步：「${prompt}」只帮人省这一步，别的都不做。`,
+          "界面砍到一屏：一个输入、一个按钮、一个结果。",
+          "数据先存本地，导出和同步留到下一版。",
+          "上线前让 1 个人当面用一次，记下他卡住的位置。",
+        ],
       ],
     },
     bug: {
       label: "修 Bug",
       defaultPrompt: "修一个只在周五出现的 Bug",
-      steps: (prompt) => [
-        `先复现：把「${prompt}」的触发条件缩成 3 步以内。`,
-        "再定位：从第一个异常开始看，不要从最后一个报错开始。",
-        "只改一处，补一条回归测试，再跑一遍全链路。",
-        "把这次 Bug 写成团队检查项，让它只发生一次。",
+      plans: [
+        (prompt) => [
+          `先复现：把「${prompt}」的触发条件缩成 3 步以内。`,
+          "再定位：从第一个异常开始看，不要从最后一个报错开始。",
+          "只改一处，补一条回归测试，再跑一遍全链路。",
+          "把这次 Bug 写成团队检查项，让它只发生一次。",
+        ],
+        (prompt) => [
+          `先写下你的假设：「${prompt}」最可能坏在哪一步，然后想办法证明它是错的。`,
+          "加一行日志比猜一小时有用 —— 先把现场抓下来。",
+          "只做最小改动，别顺手重构；重构另开一次提交。",
+          "补一句“下次怎样更快发现它”，写进检查清单。",
+        ],
       ],
     },
     story: {
       label: "讲故事",
       defaultPrompt: "讲一个关于 1024 的故事",
-      steps: (prompt) => [
-        `先定一句话：你想让谁听见「${prompt}」。`,
-        "搭结构：开头 3 秒、一个转折、一个结尾。",
-        "用具体细节替换形容词；删掉第一段的一半。",
-        "发布后读 10 条评论，再写下一版。",
+      plans: [
+        (prompt) => [
+          `先定一句话：你想让谁听见「${prompt}」。`,
+          "搭结构：开头 3 秒、一个转折、一个结尾。",
+          "用具体细节替换形容词；删掉第一段的一半。",
+          "发布后读 10 条评论，再写下一版。",
+        ],
+        (prompt) => [
+          `先选一个场景：一个时间、一个地点、一个人 ——「${prompt}」从这里开始。`,
+          "开头别解释背景，先给一个动作。",
+          "把最动人的那个数字或物件留到结尾。",
+          "念出声改一遍，拗口的句子当场删掉。",
+        ],
       ],
     },
   };
@@ -154,14 +178,17 @@
 
   const generatePlan = (goal, style, prompt, seed, regenCount) => {
     const goalData = GOALS[goal] || GOALS.tool;
+    const variant = regenCount % goalData.plans.length;
     return {
       goal,
       style,
       prompt,
       seed,
       regenCount,
+      variant,
+      variants: goalData.plans.length,
       planTitle: `你的 Build：${prompt}`,
-      steps: goalData.steps(prompt),
+      steps: goalData.plans[variant](prompt),
     };
   };
 
@@ -279,7 +306,7 @@
             (step, index) =>
               `<div class="plan-step"><span class="step-num">0${index + 1}</span><span>${CTM.utils.escapeHtml(step)}</span></div>`
           )
-          .join("")}<div class="plan-foot">本地模板生成 · 可“再生成一次”或采纳</div>`);
+          .join("")}<div class="plan-foot">本地模板生成 · 方案 ${local.generated.variant + 1}/${local.generated.variants} · 「再生成一次」会换一套做法</div>`);
         planEl.classList.add("is-plan");
         renderPoster(local.generated);
         adoptBtn.disabled = false;

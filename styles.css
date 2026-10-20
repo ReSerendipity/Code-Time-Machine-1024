@@ -2118,7 +2118,7 @@ kbd {
   background: rgba(108, 255, 158, 0.04);
 }
 
-.machine-brief b {
+.machine-brief > b {
   display: block;
   margin-bottom: 7px;
   color: #6cff9e;
@@ -2754,7 +2754,7 @@ kbd {
   background: rgba(240, 198, 116, 0.05);
 }
 
-.unix-brief b {
+.unix-brief > b {
   display: block;
   margin-bottom: 5px;
   color: #f0c674;
