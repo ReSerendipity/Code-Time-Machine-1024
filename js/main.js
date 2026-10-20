@@ -322,11 +322,15 @@
         if (done) return;
         done = true;
         if (raf) cancelAnimationFrame(raf);
+        if (safety) window.clearTimeout(safety);
         if (skipHandler) skipBtn.removeEventListener("click", skipHandler);
         if (keyHandler) document.removeEventListener("keydown", keyHandler);
         overlay.hidden = true;
         resolve();
       };
+
+      /* 标签页被切走时 requestAnimationFrame 会停摆，用墙钟时间兜底 */
+      const safety = window.setTimeout(finish, total + 1500);
 
       if (reduced) {
         yearEl.textContent = String(toYear);
@@ -431,6 +435,7 @@
 
     eraCompleted = false;
     if (CTM.agent.mode !== "takeover") CTM.agent.mode = "idle";
+    CTM.agent.hide();
     state.eraIndex = index;
     state.started = true;
     if (!state.startedAt) state.startedAt = Date.now();

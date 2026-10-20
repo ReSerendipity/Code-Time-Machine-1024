@@ -157,12 +157,14 @@
     CTM.agent.mode = "assist";
     CTM.audio.glitch();
     await solveEra(CTM.eras[index]);
+    hideCursor();
   }
 
   CTM.agent = {
     mode: "idle",
     takeover,
     assistCurrent,
+    hide: hideCursor,
     cancel() {
       runner.cancelled = true;
       CTM.agent.mode = "idle";

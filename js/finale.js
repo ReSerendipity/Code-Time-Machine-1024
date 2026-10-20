@@ -439,11 +439,15 @@
         if (done) return;
         done = true;
         if (raf) cancelAnimationFrame(raf);
+        if (safety) window.clearTimeout(safety);
         skipBtn.removeEventListener("click", finish);
         document.removeEventListener("keydown", onKey);
         window.removeEventListener("resize", onResize);
         resolve();
       };
+
+      /* 面板被切走时 rAF 会停摆，用墙钟时间兜底，不让玩家卡在动画里 */
+      const safety = window.setTimeout(finish, DURATION + 3000);
 
       const onKey = (event) => {
         if (event.key === "Escape" || event.key === "Enter" || event.key === " ") finish();
