@@ -11,7 +11,14 @@
     '10.0.0.63 - [24/Oct/2026:03:07:07] "DELETE /api/cache HTTP/1.1" 500 32 ERROR',
   ];
 
-  const COMMANDS = ["grep ERROR", "grep 500", "grep 404", "wc -l", "sort", "uniq -c"];
+  const COMMANDS = [
+    { cmd: "grep ERROR", man: "只留下含 ERROR 的行" },
+    { cmd: "grep 500", man: "只留下含 500 的行" },
+    { cmd: "grep 404", man: "只留下含 404 的行" },
+    { cmd: "wc -l", man: "数还剩几行" },
+    { cmd: "sort", man: "把行排个序" },
+    { cmd: "uniq -c", man: "合并重复行并计数" },
+  ];
 
   CTM.eras.push({
     id: "unix",
@@ -27,6 +34,10 @@
     ],
     render(root, api) {
       root.innerHTML = `<div class="room room-unix">
+        <div class="unix-brief">
+          <b>值班单</b>
+          <p>昨天的部署出问题了。数一数：日志里<b>状态码 500 并且标了 ERROR</b> 的请求有几条。把工具用 <code>|</code> 串起来，最后一个工具的输出就是答案。</p>
+        </div>
         <div class="teletype">
           <div class="tt-head">unix@bell-labs:~/logs<span>第 3 站 · 1972</span></div>
           <div class="paper-tape" data-log>${LOG_LINES.map(
@@ -36,20 +47,25 @@
           <div class="printout" data-output aria-live="polite">&gt; 等待管道运行。</div>
         </div>
         <div class="kbd">
+          <div class="kbd-label">工具架 · 点一下接到管道后面</div>
           <div class="kbd-row" data-tray>${COMMANDS.map(
-            (cmd) => `<button class="key" type="button" data-cmd="${cmd}">${cmd}</button>`
+            (item) => `<button class="key" type="button" data-cmd="${item.cmd}">
+              <span class="key-text">${item.cmd}</span>
+              <span class="key-man">${item.man}</span>
+            </button>`
           ).join("")}</div>
           <div class="kbd-row kbd-actions">
             <button class="enter-key" type="button" data-run>运行管道</button>
-            <button class="kbd-btn" type="button" data-undo>撤销</button>
+            <button class="kbd-btn" type="button" data-undo>撤销最后一个</button>
             <button class="kbd-btn" type="button" data-reset>重置</button>
             <button class="kbd-btn" type="button" data-sources>man 页 · 史料</button>
           </div>
         </div>
-        <div class="man-note">提示：先缩小范围，再数行数。<code>wc -l</code> 只数最后剩下的行。</div>
+        <div class="unix-hint" data-hint hidden></div>
       </div>`;
 
       const teletype = root.querySelector(".teletype");
+      const hintEl = root.querySelector("[data-hint]");
       const pipelineEl = root.querySelector("[data-pipeline]");
       const outputEl = root.querySelector("[data-output]");
       const trayEl = root.querySelector("[data-tray]");
@@ -101,10 +117,36 @@
         });
       };
 
+      const has = (command) => local.pipeline.includes(command);
+
+      const diagnose = (count) => {
+        if (count === 7) return "结果是 7 —— 你数的是整份日志。先缩小范围（grep），再数行数（wc -l）。";
+        if (count === 4 && has("grep 500") && !has("grep ERROR")) {
+          return "多出来的那一行是 GET /api/slow：它的状态码是 200，只是耗时 500ms。grep 按字符匹配，看到「500」就留下。再补一道 grep ERROR，把 OK 的行筛掉。";
+        }
+        if (count === 4 && has("grep ERROR") && !has("grep 500")) {
+          return "多出来的那一行是 GET /missing：它确实写着 ERROR，但状态码是 404。你要的是 500，再补一道 grep 500。";
+        }
+        if (count === 5) return "5 行里混进了 404 和 500ms。两条筛选都要：ERROR 和 500 同时命中的那几行才是答案。";
+        if (count === 0) return "结果是 0：两道 grep 之间互相筛空了。检查你接的关键字，日志里同时出现「500」和「ERROR」的行是有的。";
+        return `结果是 ${count}，不是 3。把最后的 wc -l 去掉再运行一次，就能看见到底是哪几行被留下了 —— 这也是真实的调试方法。`;
+      };
+
+      const showHint = (cause) => {
+        const plan =
+          local.errors >= 2
+            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。</div>`
+            : "";
+        hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
+          cause
+        )}</div>${plan}`;
+        hintEl.hidden = false;
+      };
+
       const runPipeline = () => {
         if (local.locked) return;
         if (local.pipeline.length <= 1) {
-          api.toast("管道里只有 cat。把命令接上去。");
+          api.toast("管道里只有 cat。把工具接到它后面。");
           CTM.audio.error();
           return;
         }
@@ -112,7 +154,7 @@
         clearHighlights();
         if (count === null) {
           outputEl.textContent = lines.length ? lines.join("\n") : "(空)";
-          api.toast("管道有输出，但还没有数行数。最后接一个 wc -l。");
+          showHint("管道有输出，但还没有数行数。最后接一个 wc -l，它会把上面交下来的行数列成一个数字。");
           CTM.audio.teletype();
           return;
         }
@@ -120,6 +162,7 @@
         CTM.audio.teletype();
         if (count === 3) {
           local.locked = true;
+          hintEl.hidden = true;
           setBusy(true);
           teletype.classList.add("is-printed");
           highlightSuccess();
@@ -137,7 +180,7 @@
           return;
         }
         local.errors += 1;
-        api.toast(count === 4 ? "结果是 4。有一条 500 只是耗时 500ms，还有一条 404 也带 ERROR。" : `结果是 ${count}，不是 3。`);
+        showHint(diagnose(count));
       };
 
       const onTrayClick = (event) => {
@@ -154,8 +197,9 @@
         if (local.locked || local.pipeline.length <= 1) return;
         local.pipeline.pop();
         renderPipeline();
-        outputEl.textContent = "> 已撤销最后一条命令。";
+        outputEl.textContent = "> 已撤销最后一个工具。";
         clearHighlights();
+        hintEl.hidden = true;
         CTM.audio.glitch();
       };
 
@@ -166,6 +210,7 @@
         renderPipeline();
         outputEl.textContent = "> 管道已重置。等待运行。";
         clearHighlights();
+        hintEl.hidden = true;
         CTM.audio.click();
       };
 

@@ -2,15 +2,16 @@
   "use strict";
 
   const INSTRUCTIONS = {
-    loadA: { text: "LOAD A 3", op: "loadA" },
-    loadB: { text: "LOAD B 4", op: "loadB" },
-    add: { text: "ADD A B", op: "add" },
-    out: { text: "OUT A", op: "out" },
-    sub: { text: "SUB A B", op: "sub" },
-    jmp: { text: "JMP 0", op: "jmp" },
+    loadA: { text: "LOAD A 3", effect: "A ← 3" },
+    loadB: { text: "LOAD B 4", effect: "B ← 4" },
+    add: { text: "ADD A B", effect: "A ← A + B" },
+    out: { text: "OUT A", effect: "交出 A" },
+    sub: { text: "SUB A B", effect: "A ← A - B" },
+    jmp: { text: "JMP 0", effect: "跳回第 1 行" },
   };
 
   const ORDER = ["loadA", "loadB", "add", "out", "sub", "jmp"];
+  const SOLUTION = ["loadA", "loadB", "add", "out"];
   const tubes = Array.from({ length: 9 }, () => '<span class="tube"></span>').join("");
 
   CTM.eras.push({
@@ -29,6 +30,7 @@
       root.innerHTML = `<div class="room room-register">
         <div class="machine-plate">ENIAC · 1945<span>Console 02 · 第 2 站</span></div>
         <div class="crt-bay">
+          <div class="stencil">任务：把 3 和 4 加起来，交给 OUT<span>目标 OUT = 7</span></div>
           <div class="crt-monitor">
             <div class="crt-top">
               <div class="tube-row" aria-hidden="true">${tubes}</div>
@@ -43,13 +45,29 @@
               <div class="crt-log" data-log aria-live="polite">&gt; READY. 等待指令。</div>
             </div>
           </div>
-          <div class="stencil">目标：OUT = 7</div>
+          <div class="machine-brief">
+            <b>这台机器怎么跑</b>
+            <ul>
+              <li>接线板的 01 → 04 就是执行顺序，机器只会从上往下，一行一次。</li>
+              <li>A 和 B 是寄存器，初值都是 <code>0</code>；不 LOAD 进去就是 0。</li>
+              <li>OUT 是“把结果交出去”，所以它必须接在最后一行。</li>
+            </ul>
+          </div>
         </div>
         <div class="console-desk">
+          <div class="desk-label">接线板 · 4 行程序</div>
           <div class="patch-bay" data-program></div>
+          <div class="desk-label">指令开关 · 点一下接一行</div>
           <div class="switchboard" data-tray>${ORDER.map(
-            (id) => `<button class="switch" type="button" data-instr="${id}"><i></i>${INSTRUCTIONS[id].text}</button>`
+            (id) => `<button class="switch" type="button" data-instr="${id}">
+              <i></i>
+              <span class="switch-body">
+                <span class="switch-text">${INSTRUCTIONS[id].text}</span>
+                <span class="switch-effect">${INSTRUCTIONS[id].effect}</span>
+              </span>
+            </button>`
           ).join("")}</div>
+          <div class="console-hint" data-hint hidden></div>
           <div class="console-actions">
             <button class="big-red" type="button" data-run>运行</button>
             <button class="console-btn" type="button" data-step>单步</button>
@@ -61,6 +79,7 @@
 
       const screen = root.querySelector(".crt-screen");
       const logEl = root.querySelector("[data-log]");
+      const hintEl = root.querySelector("[data-hint]");
       const regEls = {
         A: root.querySelector('[data-val="A"]'),
         B: root.querySelector('[data-val="B"]'),
@@ -118,12 +137,15 @@
         for (let index = 0; index < 4; index += 1) {
           const id = local.program[index];
           if (!id) {
-            slots.push(`<div class="patch"><span class="patch-index">0${index + 1}</span><span class="patch-text">—</span></div>`);
+            slots.push(
+              `<div class="patch"><span class="patch-index">0${index + 1}</span><span class="patch-text patch-empty">空行 · 什么都不做</span></div>`
+            );
             continue;
           }
           slots.push(`<div class="patch is-wired">
             <span class="patch-index">0${index + 1}</span>
             <span class="patch-text">${INSTRUCTIONS[id].text}</span>
+            <span class="patch-effect">${INSTRUCTIONS[id].effect}</span>
             <span class="patch-actions">
               <button class="mini-btn" type="button" data-move="up" data-index="${index}" aria-label="上移">↑</button>
               <button class="mini-btn" type="button" data-move="down" data-index="${index}" aria-label="下移">↓</button>
@@ -156,6 +178,49 @@
         if (clearLog) logEl.textContent = "> READY. 等待指令。";
       };
 
+      const diagnose = () => {
+        const program = local.program;
+        const at = (id) => program.indexOf(id);
+        if (at("jmp") !== -1) {
+          return "JMP 0 把执行顺序拽回第 1 行，机器一直在转，永远走不到 OUT。这关用不上它。";
+        }
+        if (at("out") === -1) {
+          return "没有 OUT A：机器算完了，但没人把结果交出去，OUT 还是空的。";
+        }
+        if (at("out") !== program.length - 1) {
+          return `OUT 接在第 0${at("out") + 1} 行，它后面还有指令。OUT 要放在最后一行：先算完，再输出。`;
+        }
+        if (at("loadA") === -1 || at("loadB") === -1) {
+          return "A 和 B 的初值都是 0。先把 3 和 4 分别 LOAD 进去，才有数可加。";
+        }
+        if (at("add") === -1 && at("sub") === -1) {
+          return "两个数都装好了，但没有把它们合起来的指令。ADD A B 会把 A + B 的结果放回 A。";
+        }
+        if (at("add") !== -1 && at("add") < at("loadB")) {
+          return "ADD 执行的时候 B 还是 0 —— 机器不会替你把后面的步骤提前。先 LOAD B 4，再 ADD A B。";
+        }
+        if (at("add") < at("loadA")) {
+          return "ADD 执行的时候 A 还是 0。先 LOAD A 3，再 ADD A B。";
+        }
+        if (at("sub") !== -1) {
+          return "SUB A B 是相减，越减越小。要得到 7，这里应该是 ADD A B。";
+        }
+        return `输出是 ${local.registers.OUT === null ? "--" : local.registers.OUT}，不是 7。逐行看屏幕上的执行记录，哪一步的数第一次不对，问题就在那一行。`;
+      };
+
+      const showHint = () => {
+        const plan =
+          local.errors >= 2
+            ? `<div class="hint-plan">可以照这个顺序接一遍：${SOLUTION.map((id) => INSTRUCTIONS[id].text).join(
+                " → "
+              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。</div>`
+            : "";
+        hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
+          diagnose()
+        )}</div>${plan}`;
+        hintEl.hidden = false;
+      };
+
       const executeInstruction = (id) => {
         switch (id) {
           case "loadA":
@@ -170,7 +235,7 @@
             return { jumped: false };
           case "add":
             setReg("A", local.registers.A + local.registers.B);
-            log(`A ← A + B = ${local.registers.A}`);
+            log(`A ← A + B = ${local.registers.A}${local.registers.B === 0 ? "   ← B 还是 0" : ""}`);
             CTM.audio.relay();
             return { jumped: false };
           case "out":
@@ -184,7 +249,7 @@
             CTM.audio.relay();
             return { jumped: false };
           case "jmp":
-            log("PC ← 0  (死循环)");
+            log("PC ← 0  (回到第 1 行)");
             CTM.audio.error();
             return { jumped: true };
           default:
@@ -197,6 +262,7 @@
         renderAll();
         if (local.registers.OUT === 7) {
           local.locked = true;
+          hintEl.hidden = true;
           screen.classList.add("is-passed");
           renderAll();
           log("OUTPUT: 7 / PROGRAM PASSED.");
@@ -206,25 +272,25 @@
             () =>
               !local.cancelled &&
               api.complete(score, { program: local.program.slice(), errors: local.errors }, { continueLabel: "前往 1972 →" }),
-            800
+            900
           );
           return;
         }
         local.errors += 1;
         const output = local.registers.OUT === null ? "--" : local.registers.OUT;
         log(`OUTPUT: ${output} / TARGET: 7`);
-        api.toast(local.errors >= 2 ? "提示：先 LOAD A，再 LOAD B，然后 ADD A B，最后 OUT A。" : `输出是 ${output}，不是 7。`);
+        showHint();
         CTM.audio.error();
       };
 
       const runAll = async () => {
         if (local.running || local.locked) return;
         if (!local.program.length) {
-          api.toast("先从开关板选指令。");
+          api.toast("先在下面的指令开关上点一行。");
           return;
         }
         if (local.program.length < 4) {
-          api.toast(`机器需要 4 条指令，现在只有 ${local.program.length} 条。`);
+          api.toast(`机器有 4 行，现在只接了 ${local.program.length} 行。空行会直接跳过。`);
           return;
         }
         local.running = true;
@@ -246,7 +312,7 @@
           local.running = false;
           local.errors += 1;
           renderAll();
-          api.toast("JMP 0 把程序计数器带回了起点，机器过热了。");
+          showHint();
           return;
         }
         finish();
@@ -255,7 +321,7 @@
       const stepOnce = async () => {
         if (local.running || local.locked) return;
         if (!local.program.length) {
-          api.toast("先选指令，再单步执行。");
+          api.toast("先接指令，再单步执行。");
           return;
         }
         if (local.stepIndex === 0) resetMachine(true);
@@ -274,7 +340,7 @@
           local.running = false;
           local.errors += 1;
           renderAll();
-          api.toast("JMP 0 让程序计数器回到了起点。机器过热。");
+          showHint();
           return;
         }
         if (local.stepIndex >= local.program.length) {
@@ -311,7 +377,7 @@
         const button = event.target.closest("[data-instr]");
         if (!button || local.running || local.locked) return;
         if (local.program.length >= 4) {
-          api.toast("接线板只有 4 个槽位。");
+          api.toast("接线板只有 4 行。先用 × 拆掉一行。");
           return;
         }
         local.program.push(button.dataset.instr);
@@ -325,6 +391,7 @@
         local.errors = 0;
         local.locked = false;
         local.running = false;
+        hintEl.hidden = true;
         screen.classList.remove("is-passed");
         resetMachine(true);
         renderAll();

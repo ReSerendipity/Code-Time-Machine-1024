@@ -49,7 +49,10 @@
               <span class="punch-card-title">JACQUARD 1024 / PUNCH CARD</span>
               <span class="punch-letter" data-letter>B</span>
             </div>
-            <div class="card-instruction">目标编码 · 0 打上面的孔，1 打下面的孔</div>
+            <div class="card-instruction">
+              <span data-derivation>B 是字母表第 2 个 · 2 写成 5 位二进制 = 00010</span>
+              每一列选一个孔：读到 <code>0</code> 打上面，读到 <code>1</code> 打下面
+            </div>
             <div class="binary-readout"><span data-target-code>00010</span></div>
             <div class="hole-grid" data-holes>${holesHtml}</div>
             <div class="woven-stamp">WOVEN</div>
@@ -70,6 +73,7 @@
       const loom = root.querySelector("[data-loom]");
       const letterEl = root.querySelector("[data-letter]");
       const targetEl = root.querySelector("[data-target-code]");
+      const derivationEl = root.querySelector("[data-derivation]");
       const select = root.querySelector("[data-letter-select]");
       const readBtn = root.querySelector("[data-read]");
       const resetBtn = root.querySelector("[data-reset]");
@@ -86,9 +90,16 @@
         cancelled: false,
       };
 
+      const renderTarget = () => {
+        const code = local.target.join("");
+        const order = local.letter.charCodeAt(0) - 64;
+        letterEl.textContent = local.letter;
+        targetEl.textContent = code;
+        derivationEl.textContent = `${local.letter} 是字母表第 ${order} 个 · ${order} 写成 5 位二进制 = ${code}`;
+      };
+
       select.value = local.letter;
-      letterEl.textContent = local.letter;
-      targetEl.textContent = local.target.join("");
+      renderTarget();
 
       const clearHints = () => holeButtons.forEach((button) => button.classList.remove("is-target"));
 
@@ -111,8 +122,7 @@
         if (local.locked) return;
         local.letter = select.value;
         local.target = bitsForLetter(local.letter);
-        letterEl.textContent = local.letter;
-        targetEl.textContent = local.target.join("");
+        renderTarget();
         resetHoles();
         api.toast(`目标换成了 ${local.letter}：${local.target.join("")}`);
         CTM.audio.click();

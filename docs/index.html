@@ -1598,6 +1598,7 @@ kbd {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: clamp(6px, 1.2vw, 12px);
+  margin-bottom: 16px;
 }
 
 .hole-col {
@@ -1662,6 +1663,7 @@ kbd {
   letter-spacing: 0.1em;
   transform: rotate(-12deg);
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s;
 }
 
@@ -1730,14 +1732,29 @@ kbd {
 }
 
 .card-instruction {
-  margin: 0 0 7px;
+  display: grid;
+  gap: 3px;
+  margin: 0 0 8px;
   color: #7a4b2a;
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.16em;
+  font-size: 9px;
+  letter-spacing: 0.04em;
   line-height: 1.6;
   text-align: center;
-  text-transform: uppercase;
+}
+
+.card-instruction span {
+  color: #2b2118;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.card-instruction code {
+  padding: 0 3px;
+  border: 1px solid rgba(122, 75, 42, 0.35);
+  border-radius: 3px;
+  background: rgba(122, 75, 42, 0.1);
 }
 
 .binary-readout {
@@ -2079,17 +2096,71 @@ kbd {
 }
 
 .stencil {
-  justify-self: center;
-  padding: 8px 18px;
+  justify-self: stretch;
+  display: grid;
+  gap: 4px;
+  padding: 10px 16px;
   border: 2px dashed rgba(108, 255, 158, 0.45);
   border-radius: 4px;
   background: rgba(108, 255, 158, 0.05);
-  color: #b7ffd0;
-  font-family: var(--font-mono);
+  color: #d8ffe4;
   font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.stencil span {
+  color: #6cff9e;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 14px rgba(108, 255, 158, 0.4);
+}
+
+.machine-brief {
+  padding: 12px 14px;
+  border: 1px solid var(--era-line);
+  border-left: 3px solid rgba(108, 255, 158, 0.55);
+  border-radius: 8px;
+  background: rgba(108, 255, 158, 0.04);
+}
+
+.machine-brief b {
+  display: block;
+  margin-bottom: 7px;
+  color: #6cff9e;
+  font-family: var(--font-mono);
+  font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  text-shadow: 0 0 14px rgba(108, 255, 158, 0.4);
+}
+
+.machine-brief ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 16px;
+  color: var(--era-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.machine-brief code {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(108, 255, 158, 0.12);
+  color: #b7ffd0;
+}
+
+.desk-label {
+  color: rgba(108, 255, 158, 0.55);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .console-desk {
@@ -2206,6 +2277,69 @@ kbd {
 .switch:disabled {
   opacity: 0.3;
   pointer-events: none;
+}
+
+.switch-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.switch-text {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.switch-effect {
+  color: rgba(108, 255, 158, 0.6);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.patch-effect {
+  flex: 0 0 auto;
+  min-width: 74px;
+  color: rgba(108, 255, 158, 0.6);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.patch-empty {
+  color: rgba(108, 255, 158, 0.32);
+}
+
+.console-hint {
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 139, 139, 0.4);
+  border-left: 3px solid #ff8b8b;
+  border-radius: 8px;
+  background: rgba(255, 139, 139, 0.07);
+  animation: popIn 0.3s ease both;
+}
+
+.hint-head {
+  margin-bottom: 5px;
+  color: #ff8b8b;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.hint-cause {
+  color: #ffe9d8;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.hint-plan {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(108, 255, 158, 0.3);
+  color: #b7ffd0;
+  font-size: 12px;
+  line-height: 1.7;
 }
 
 .console-actions {
@@ -2621,22 +2755,90 @@ kbd {
   pointer-events: none;
 }
 
-.man-note {
+.unix-brief {
   width: min(100%, 880px);
-  padding: 11px 14px;
-  border-left: 2px solid rgba(240, 198, 116, 0.6);
+  padding: 12px 16px;
+  border: 1px solid var(--era-line);
+  border-left: 3px solid rgba(240, 198, 116, 0.6);
+  border-radius: 10px;
   background: rgba(240, 198, 116, 0.05);
-  color: #a69b78;
-  font-size: 11px;
+}
+
+.unix-brief b {
+  display: block;
+  margin-bottom: 5px;
+  color: #f0c674;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.unix-brief p {
+  margin: 0;
+  color: #ddd2b0;
+  font-size: 13px;
   line-height: 1.75;
 }
 
-.man-note code {
+.unix-brief code {
   padding: 1px 5px;
   border-radius: 3px;
-  background: rgba(240, 198, 116, 0.12);
+  background: rgba(240, 198, 116, 0.14);
   color: #fff0c2;
-  font-size: 10px;
+  font-size: 11px;
+}
+
+.kbd-label {
+  color: #a69b78;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.key {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+}
+
+.key-text {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.key-man {
+  color: #6a5a30;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.unix-hint {
+  width: min(100%, 880px);
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 139, 139, 0.45);
+  border-left: 3px solid #ff8b8b;
+  border-radius: 10px;
+  background: rgba(255, 139, 139, 0.07);
+  animation: popIn 0.3s ease both;
+}
+
+.unix-hint .hint-cause {
+  color: #ffe9d8;
+}
+
+.unix-hint .hint-plan {
+  border-top-color: rgba(240, 198, 116, 0.3);
+  color: #fff0c2;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.unix-hint .hint-plan code {
+  color: #f0c674;
 }
 
 /* =========================================================
@@ -5476,7 +5678,10 @@ kbd {
               <span class="punch-card-title">JACQUARD 1024 / PUNCH CARD</span>
               <span class="punch-letter" data-letter>B</span>
             </div>
-            <div class="card-instruction">目标编码 · 0 打上面的孔，1 打下面的孔</div>
+            <div class="card-instruction">
+              <span data-derivation>B 是字母表第 2 个 · 2 写成 5 位二进制 = 00010</span>
+              每一列选一个孔：读到 <code>0</code> 打上面，读到 <code>1</code> 打下面
+            </div>
             <div class="binary-readout"><span data-target-code>00010</span></div>
             <div class="hole-grid" data-holes>${holesHtml}</div>
             <div class="woven-stamp">WOVEN</div>
@@ -5497,6 +5702,7 @@ kbd {
       const loom = root.querySelector("[data-loom]");
       const letterEl = root.querySelector("[data-letter]");
       const targetEl = root.querySelector("[data-target-code]");
+      const derivationEl = root.querySelector("[data-derivation]");
       const select = root.querySelector("[data-letter-select]");
       const readBtn = root.querySelector("[data-read]");
       const resetBtn = root.querySelector("[data-reset]");
@@ -5513,9 +5719,16 @@ kbd {
         cancelled: false,
       };
 
+      const renderTarget = () => {
+        const code = local.target.join("");
+        const order = local.letter.charCodeAt(0) - 64;
+        letterEl.textContent = local.letter;
+        targetEl.textContent = code;
+        derivationEl.textContent = `${local.letter} 是字母表第 ${order} 个 · ${order} 写成 5 位二进制 = ${code}`;
+      };
+
       select.value = local.letter;
-      letterEl.textContent = local.letter;
-      targetEl.textContent = local.target.join("");
+      renderTarget();
 
       const clearHints = () => holeButtons.forEach((button) => button.classList.remove("is-target"));
 
@@ -5538,8 +5751,7 @@ kbd {
         if (local.locked) return;
         local.letter = select.value;
         local.target = bitsForLetter(local.letter);
-        letterEl.textContent = local.letter;
-        targetEl.textContent = local.target.join("");
+        renderTarget();
         resetHoles();
         api.toast(`目标换成了 ${local.letter}：${local.target.join("")}`);
         CTM.audio.click();
@@ -5626,15 +5838,16 @@ kbd {
   "use strict";
 
   const INSTRUCTIONS = {
-    loadA: { text: "LOAD A 3", op: "loadA" },
-    loadB: { text: "LOAD B 4", op: "loadB" },
-    add: { text: "ADD A B", op: "add" },
-    out: { text: "OUT A", op: "out" },
-    sub: { text: "SUB A B", op: "sub" },
-    jmp: { text: "JMP 0", op: "jmp" },
+    loadA: { text: "LOAD A 3", effect: "A ← 3" },
+    loadB: { text: "LOAD B 4", effect: "B ← 4" },
+    add: { text: "ADD A B", effect: "A ← A + B" },
+    out: { text: "OUT A", effect: "交出 A" },
+    sub: { text: "SUB A B", effect: "A ← A - B" },
+    jmp: { text: "JMP 0", effect: "跳回第 1 行" },
   };
 
   const ORDER = ["loadA", "loadB", "add", "out", "sub", "jmp"];
+  const SOLUTION = ["loadA", "loadB", "add", "out"];
   const tubes = Array.from({ length: 9 }, () => '<span class="tube"></span>').join("");
 
   CTM.eras.push({
@@ -5653,6 +5866,7 @@ kbd {
       root.innerHTML = `<div class="room room-register">
         <div class="machine-plate">ENIAC · 1945<span>Console 02 · 第 2 站</span></div>
         <div class="crt-bay">
+          <div class="stencil">任务：把 3 和 4 加起来，交给 OUT<span>目标 OUT = 7</span></div>
           <div class="crt-monitor">
             <div class="crt-top">
               <div class="tube-row" aria-hidden="true">${tubes}</div>
@@ -5667,13 +5881,29 @@ kbd {
               <div class="crt-log" data-log aria-live="polite">&gt; READY. 等待指令。</div>
             </div>
           </div>
-          <div class="stencil">目标：OUT = 7</div>
+          <div class="machine-brief">
+            <b>这台机器怎么跑</b>
+            <ul>
+              <li>接线板的 01 → 04 就是执行顺序，机器只会从上往下，一行一次。</li>
+              <li>A 和 B 是寄存器，初值都是 <code>0</code>；不 LOAD 进去就是 0。</li>
+              <li>OUT 是“把结果交出去”，所以它必须接在最后一行。</li>
+            </ul>
+          </div>
         </div>
         <div class="console-desk">
+          <div class="desk-label">接线板 · 4 行程序</div>
           <div class="patch-bay" data-program></div>
+          <div class="desk-label">指令开关 · 点一下接一行</div>
           <div class="switchboard" data-tray>${ORDER.map(
-            (id) => `<button class="switch" type="button" data-instr="${id}"><i></i>${INSTRUCTIONS[id].text}</button>`
+            (id) => `<button class="switch" type="button" data-instr="${id}">
+              <i></i>
+              <span class="switch-body">
+                <span class="switch-text">${INSTRUCTIONS[id].text}</span>
+                <span class="switch-effect">${INSTRUCTIONS[id].effect}</span>
+              </span>
+            </button>`
           ).join("")}</div>
+          <div class="console-hint" data-hint hidden></div>
           <div class="console-actions">
             <button class="big-red" type="button" data-run>运行</button>
             <button class="console-btn" type="button" data-step>单步</button>
@@ -5685,6 +5915,7 @@ kbd {
 
       const screen = root.querySelector(".crt-screen");
       const logEl = root.querySelector("[data-log]");
+      const hintEl = root.querySelector("[data-hint]");
       const regEls = {
         A: root.querySelector('[data-val="A"]'),
         B: root.querySelector('[data-val="B"]'),
@@ -5742,12 +5973,15 @@ kbd {
         for (let index = 0; index < 4; index += 1) {
           const id = local.program[index];
           if (!id) {
-            slots.push(`<div class="patch"><span class="patch-index">0${index + 1}</span><span class="patch-text">—</span></div>`);
+            slots.push(
+              `<div class="patch"><span class="patch-index">0${index + 1}</span><span class="patch-text patch-empty">空行 · 什么都不做</span></div>`
+            );
             continue;
           }
           slots.push(`<div class="patch is-wired">
             <span class="patch-index">0${index + 1}</span>
             <span class="patch-text">${INSTRUCTIONS[id].text}</span>
+            <span class="patch-effect">${INSTRUCTIONS[id].effect}</span>
             <span class="patch-actions">
               <button class="mini-btn" type="button" data-move="up" data-index="${index}" aria-label="上移">↑</button>
               <button class="mini-btn" type="button" data-move="down" data-index="${index}" aria-label="下移">↓</button>
@@ -5780,6 +6014,49 @@ kbd {
         if (clearLog) logEl.textContent = "> READY. 等待指令。";
       };
 
+      const diagnose = () => {
+        const program = local.program;
+        const at = (id) => program.indexOf(id);
+        if (at("jmp") !== -1) {
+          return "JMP 0 把执行顺序拽回第 1 行，机器一直在转，永远走不到 OUT。这关用不上它。";
+        }
+        if (at("out") === -1) {
+          return "没有 OUT A：机器算完了，但没人把结果交出去，OUT 还是空的。";
+        }
+        if (at("out") !== program.length - 1) {
+          return `OUT 接在第 0${at("out") + 1} 行，它后面还有指令。OUT 要放在最后一行：先算完，再输出。`;
+        }
+        if (at("loadA") === -1 || at("loadB") === -1) {
+          return "A 和 B 的初值都是 0。先把 3 和 4 分别 LOAD 进去，才有数可加。";
+        }
+        if (at("add") === -1 && at("sub") === -1) {
+          return "两个数都装好了，但没有把它们合起来的指令。ADD A B 会把 A + B 的结果放回 A。";
+        }
+        if (at("add") !== -1 && at("add") < at("loadB")) {
+          return "ADD 执行的时候 B 还是 0 —— 机器不会替你把后面的步骤提前。先 LOAD B 4，再 ADD A B。";
+        }
+        if (at("add") < at("loadA")) {
+          return "ADD 执行的时候 A 还是 0。先 LOAD A 3，再 ADD A B。";
+        }
+        if (at("sub") !== -1) {
+          return "SUB A B 是相减，越减越小。要得到 7，这里应该是 ADD A B。";
+        }
+        return `输出是 ${local.registers.OUT === null ? "--" : local.registers.OUT}，不是 7。逐行看屏幕上的执行记录，哪一步的数第一次不对，问题就在那一行。`;
+      };
+
+      const showHint = () => {
+        const plan =
+          local.errors >= 2
+            ? `<div class="hint-plan">可以照这个顺序接一遍：${SOLUTION.map((id) => INSTRUCTIONS[id].text).join(
+                " → "
+              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。</div>`
+            : "";
+        hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
+          diagnose()
+        )}</div>${plan}`;
+        hintEl.hidden = false;
+      };
+
       const executeInstruction = (id) => {
         switch (id) {
           case "loadA":
@@ -5794,7 +6071,7 @@ kbd {
             return { jumped: false };
           case "add":
             setReg("A", local.registers.A + local.registers.B);
-            log(`A ← A + B = ${local.registers.A}`);
+            log(`A ← A + B = ${local.registers.A}${local.registers.B === 0 ? "   ← B 还是 0" : ""}`);
             CTM.audio.relay();
             return { jumped: false };
           case "out":
@@ -5808,7 +6085,7 @@ kbd {
             CTM.audio.relay();
             return { jumped: false };
           case "jmp":
-            log("PC ← 0  (死循环)");
+            log("PC ← 0  (回到第 1 行)");
             CTM.audio.error();
             return { jumped: true };
           default:
@@ -5821,6 +6098,7 @@ kbd {
         renderAll();
         if (local.registers.OUT === 7) {
           local.locked = true;
+          hintEl.hidden = true;
           screen.classList.add("is-passed");
           renderAll();
           log("OUTPUT: 7 / PROGRAM PASSED.");
@@ -5830,25 +6108,25 @@ kbd {
             () =>
               !local.cancelled &&
               api.complete(score, { program: local.program.slice(), errors: local.errors }, { continueLabel: "前往 1972 →" }),
-            800
+            900
           );
           return;
         }
         local.errors += 1;
         const output = local.registers.OUT === null ? "--" : local.registers.OUT;
         log(`OUTPUT: ${output} / TARGET: 7`);
-        api.toast(local.errors >= 2 ? "提示：先 LOAD A，再 LOAD B，然后 ADD A B，最后 OUT A。" : `输出是 ${output}，不是 7。`);
+        showHint();
         CTM.audio.error();
       };
 
       const runAll = async () => {
         if (local.running || local.locked) return;
         if (!local.program.length) {
-          api.toast("先从开关板选指令。");
+          api.toast("先在下面的指令开关上点一行。");
           return;
         }
         if (local.program.length < 4) {
-          api.toast(`机器需要 4 条指令，现在只有 ${local.program.length} 条。`);
+          api.toast(`机器有 4 行，现在只接了 ${local.program.length} 行。空行会直接跳过。`);
           return;
         }
         local.running = true;
@@ -5870,7 +6148,7 @@ kbd {
           local.running = false;
           local.errors += 1;
           renderAll();
-          api.toast("JMP 0 把程序计数器带回了起点，机器过热了。");
+          showHint();
           return;
         }
         finish();
@@ -5879,7 +6157,7 @@ kbd {
       const stepOnce = async () => {
         if (local.running || local.locked) return;
         if (!local.program.length) {
-          api.toast("先选指令，再单步执行。");
+          api.toast("先接指令，再单步执行。");
           return;
         }
         if (local.stepIndex === 0) resetMachine(true);
@@ -5898,7 +6176,7 @@ kbd {
           local.running = false;
           local.errors += 1;
           renderAll();
-          api.toast("JMP 0 让程序计数器回到了起点。机器过热。");
+          showHint();
           return;
         }
         if (local.stepIndex >= local.program.length) {
@@ -5935,7 +6213,7 @@ kbd {
         const button = event.target.closest("[data-instr]");
         if (!button || local.running || local.locked) return;
         if (local.program.length >= 4) {
-          api.toast("接线板只有 4 个槽位。");
+          api.toast("接线板只有 4 行。先用 × 拆掉一行。");
           return;
         }
         local.program.push(button.dataset.instr);
@@ -5949,6 +6227,7 @@ kbd {
         local.errors = 0;
         local.locked = false;
         local.running = false;
+        hintEl.hidden = true;
         screen.classList.remove("is-passed");
         resetMachine(true);
         renderAll();
@@ -5991,7 +6270,14 @@ kbd {
     '10.0.0.63 - [24/Oct/2026:03:07:07] "DELETE /api/cache HTTP/1.1" 500 32 ERROR',
   ];
 
-  const COMMANDS = ["grep ERROR", "grep 500", "grep 404", "wc -l", "sort", "uniq -c"];
+  const COMMANDS = [
+    { cmd: "grep ERROR", man: "只留下含 ERROR 的行" },
+    { cmd: "grep 500", man: "只留下含 500 的行" },
+    { cmd: "grep 404", man: "只留下含 404 的行" },
+    { cmd: "wc -l", man: "数还剩几行" },
+    { cmd: "sort", man: "把行排个序" },
+    { cmd: "uniq -c", man: "合并重复行并计数" },
+  ];
 
   CTM.eras.push({
     id: "unix",
@@ -6007,6 +6293,10 @@ kbd {
     ],
     render(root, api) {
       root.innerHTML = `<div class="room room-unix">
+        <div class="unix-brief">
+          <b>值班单</b>
+          <p>昨天的部署出问题了。数一数：日志里<b>状态码 500 并且标了 ERROR</b> 的请求有几条。把工具用 <code>|</code> 串起来，最后一个工具的输出就是答案。</p>
+        </div>
         <div class="teletype">
           <div class="tt-head">unix@bell-labs:~/logs<span>第 3 站 · 1972</span></div>
           <div class="paper-tape" data-log>${LOG_LINES.map(
@@ -6016,20 +6306,25 @@ kbd {
           <div class="printout" data-output aria-live="polite">&gt; 等待管道运行。</div>
         </div>
         <div class="kbd">
+          <div class="kbd-label">工具架 · 点一下接到管道后面</div>
           <div class="kbd-row" data-tray>${COMMANDS.map(
-            (cmd) => `<button class="key" type="button" data-cmd="${cmd}">${cmd}</button>`
+            (item) => `<button class="key" type="button" data-cmd="${item.cmd}">
+              <span class="key-text">${item.cmd}</span>
+              <span class="key-man">${item.man}</span>
+            </button>`
           ).join("")}</div>
           <div class="kbd-row kbd-actions">
             <button class="enter-key" type="button" data-run>运行管道</button>
-            <button class="kbd-btn" type="button" data-undo>撤销</button>
+            <button class="kbd-btn" type="button" data-undo>撤销最后一个</button>
             <button class="kbd-btn" type="button" data-reset>重置</button>
             <button class="kbd-btn" type="button" data-sources>man 页 · 史料</button>
           </div>
         </div>
-        <div class="man-note">提示：先缩小范围，再数行数。<code>wc -l</code> 只数最后剩下的行。</div>
+        <div class="unix-hint" data-hint hidden></div>
       </div>`;
 
       const teletype = root.querySelector(".teletype");
+      const hintEl = root.querySelector("[data-hint]");
       const pipelineEl = root.querySelector("[data-pipeline]");
       const outputEl = root.querySelector("[data-output]");
       const trayEl = root.querySelector("[data-tray]");
@@ -6081,10 +6376,36 @@ kbd {
         });
       };
 
+      const has = (command) => local.pipeline.includes(command);
+
+      const diagnose = (count) => {
+        if (count === 7) return "结果是 7 —— 你数的是整份日志。先缩小范围（grep），再数行数（wc -l）。";
+        if (count === 4 && has("grep 500") && !has("grep ERROR")) {
+          return "多出来的那一行是 GET /api/slow：它的状态码是 200，只是耗时 500ms。grep 按字符匹配，看到「500」就留下。再补一道 grep ERROR，把 OK 的行筛掉。";
+        }
+        if (count === 4 && has("grep ERROR") && !has("grep 500")) {
+          return "多出来的那一行是 GET /missing：它确实写着 ERROR，但状态码是 404。你要的是 500，再补一道 grep 500。";
+        }
+        if (count === 5) return "5 行里混进了 404 和 500ms。两条筛选都要：ERROR 和 500 同时命中的那几行才是答案。";
+        if (count === 0) return "结果是 0：两道 grep 之间互相筛空了。检查你接的关键字，日志里同时出现「500」和「ERROR」的行是有的。";
+        return `结果是 ${count}，不是 3。把最后的 wc -l 去掉再运行一次，就能看见到底是哪几行被留下了 —— 这也是真实的调试方法。`;
+      };
+
+      const showHint = (cause) => {
+        const plan =
+          local.errors >= 2
+            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。</div>`
+            : "";
+        hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
+          cause
+        )}</div>${plan}`;
+        hintEl.hidden = false;
+      };
+
       const runPipeline = () => {
         if (local.locked) return;
         if (local.pipeline.length <= 1) {
-          api.toast("管道里只有 cat。把命令接上去。");
+          api.toast("管道里只有 cat。把工具接到它后面。");
           CTM.audio.error();
           return;
         }
@@ -6092,7 +6413,7 @@ kbd {
         clearHighlights();
         if (count === null) {
           outputEl.textContent = lines.length ? lines.join("\n") : "(空)";
-          api.toast("管道有输出，但还没有数行数。最后接一个 wc -l。");
+          showHint("管道有输出，但还没有数行数。最后接一个 wc -l，它会把上面交下来的行数列成一个数字。");
           CTM.audio.teletype();
           return;
         }
@@ -6100,6 +6421,7 @@ kbd {
         CTM.audio.teletype();
         if (count === 3) {
           local.locked = true;
+          hintEl.hidden = true;
           setBusy(true);
           teletype.classList.add("is-printed");
           highlightSuccess();
@@ -6117,7 +6439,7 @@ kbd {
           return;
         }
         local.errors += 1;
-        api.toast(count === 4 ? "结果是 4。有一条 500 只是耗时 500ms，还有一条 404 也带 ERROR。" : `结果是 ${count}，不是 3。`);
+        showHint(diagnose(count));
       };
 
       const onTrayClick = (event) => {
@@ -6134,8 +6456,9 @@ kbd {
         if (local.locked || local.pipeline.length <= 1) return;
         local.pipeline.pop();
         renderPipeline();
-        outputEl.textContent = "> 已撤销最后一条命令。";
+        outputEl.textContent = "> 已撤销最后一个工具。";
         clearHighlights();
+        hintEl.hidden = true;
         CTM.audio.glitch();
       };
 
@@ -6146,6 +6469,7 @@ kbd {
         renderPipeline();
         outputEl.textContent = "> 管道已重置。等待运行。";
         clearHighlights();
+        hintEl.hidden = true;
         CTM.audio.click();
       };
 
