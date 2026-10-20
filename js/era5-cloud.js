@@ -221,6 +221,10 @@
         }
         phoneStatus.textContent = "TIMEOUT";
         api.toast(`有 ${errors} 个请求超时。${local.cache ? "再加一台服务器。" : "试试开缓存，或者再加一台服务器。"}`);
+        if (!local.cheated) {
+          local.cheated = true;
+          api.cheat("容量和预算本来就不该心算。可以让 Agent 替你配一套。");
+        }
         CTM.audio.error();
         setBusy(false);
       };

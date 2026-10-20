@@ -20,6 +20,7 @@
   let timerId = null;
   let lastTickMinute = null;
   let takingOver = false;
+  let cheatRefused = null;
 
   const escapeHtml = utils.escapeHtml;
 
@@ -440,6 +441,7 @@
     ui.showScreen("era");
     ui.updatePassport();
     removeContinueCard();
+    removeCheatCard();
 
     const root = $("#era-root");
     if (!root) return;
@@ -454,6 +456,9 @@
       },
       assist() {
         CTM.agent.assistCurrent(index);
+      },
+      cheat(reason) {
+        showCheatCard(index, reason);
       },
       complete(score, choice, options) {
         completeEra(index, score, choice, options || {});
@@ -477,6 +482,47 @@
   function removeContinueCard() {
     const existing = $("#era-continue");
     if (existing) existing.remove();
+  }
+
+  function removeCheatCard() {
+    const existing = $("#cheat-card");
+    if (existing) existing.remove();
+    document.body.classList.remove("has-cheat");
+  }
+
+  /* 第一次答错后给一个诚实的作弊口：可以自动填，但档案会记下来 */
+  function showCheatCard(index, reason) {
+    if (state.stamps.includes(index) || cheatRefused === index) return;
+    removeCheatCard();
+    const era = ERAS[index];
+    const card = document.createElement("div");
+    card.className = "cheat-card";
+    card.id = "cheat-card";
+    card.innerHTML = `<div class="cc-kicker">CHEAT CODE · ${era.year}</div>
+      <div class="cc-body">
+        <div class="cc-text">${escapeHtml(
+          reason || "卡住了？可以让 Agent 帮你把这一关填完。"
+        )}<span class="cc-note">档案会写明这一站是代打的</span></div>
+        <div class="cc-actions">
+          <button class="cc-go" type="button" data-cheat-go>自动帮我填</button>
+          <button class="cc-no" type="button" data-cheat-no>我再想想</button>
+        </div>
+      </div>`;
+    document.body.appendChild(card);
+    document.body.classList.add("has-cheat");
+
+    card.querySelector("[data-cheat-no]").addEventListener("click", () => {
+      cheatRefused = index;
+      removeCheatCard();
+      audio.click();
+    });
+    card.querySelector("[data-cheat-go]").addEventListener("click", async () => {
+      removeCheatCard();
+      cheatRefused = index;
+      CTM.agent.mode = "assist";
+      await CTM.agent.assistCurrent(index);
+    });
+    audio.error();
   }
 
   function showContinueCard(index, label) {
@@ -666,7 +712,7 @@
         <ul class="help-list">
           <li>全程限时 <b>1024 秒</b>，从你按下“启动时间机器”开始算。顶栏右侧有倒计时。</li>
           <li>时间用完会自动进入 <b>Agent 接管</b>：AI 接手剩下的站，把答案接给你看。档案会如实写明哪几站是它替你 Build 的，指挥维度按接管行为计分 —— 你也可以随时点“我来”拿回控制权。</li>
-          <li>在 1945 和 1972 连续答错两次，提示面板里会出现“让 Agent 接手这一关”。</li>
+          <li>第一次答错，会弹出 <b>CHEAT CODE</b>：可以让 Agent 自动帮你填这一关。用了作弊，档案会如实写明这一站是代打的，指挥维度按接管行为计分；不想用点“我再想想”，同一关不会再劝你。</li>
           <li>通关后会有一段 24 秒的结尾动画：同一个孔，从 1804 年的纸带一路变成 2026 年的光标。</li>
           <li>全部交互都可以用鼠标或键盘完成，不依赖拖拽。</li>
           <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇、生成提示音。右上角可以随时静音。</li>
@@ -703,6 +749,7 @@
     const startButton = $("#start-btn");
     if (startButton) startButton.disabled = true;
     ui.resetState();
+    cheatRefused = null;
     state.traveler = name;
     state.started = true;
     state.startedAt = Date.now();

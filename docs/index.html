@@ -1129,6 +1129,10 @@ kbd {
   width: 100%;
 }
 
+body.has-cheat .room {
+  padding-top: 118px;
+}
+
 .room {
   position: relative;
   width: 100%;
@@ -4740,6 +4744,109 @@ body[data-era="finale"] {
   line-height: 1.7;
 }
 
+.cheat-card {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(var(--topbar-h) + 10px);
+  z-index: 45;
+  width: max-content;
+  max-width: min(92vw, 620px);
+  margin: 0 auto;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 180, 84, 0.5);
+  border-radius: 14px;
+  background: rgba(14, 10, 6, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.6);
+  animation: cheatIn 0.35s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes cheatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cc-kicker {
+  margin-bottom: 5px;
+  color: #ffb454;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.cc-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.cc-text {
+  flex: 1;
+  min-width: 220px;
+  color: #f6e8d3;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.cc-note {
+  display: block;
+  margin-top: 2px;
+  color: var(--era-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.cc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.cc-go {
+  padding: 8px 16px;
+  border: 1px solid #ffb454;
+  border-radius: 999px;
+  background: #ffb454;
+  color: #1a1206;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.14s;
+}
+
+.cc-go:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.cc-no {
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--era-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cc-no:hover {
+  color: var(--era-text);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
 .composer-foot {
   display: flex;
   flex-wrap: wrap;
@@ -5212,6 +5319,17 @@ body.is-finale #main {
     padding: 8px;
     border-radius: 16px;
     gap: 9px;
+  }
+
+  .cheat-card {
+    width: auto;
+    max-width: none;
+    margin: 0 12px;
+  }
+
+  .cc-actions .cc-go,
+  .cc-actions .cc-no {
+    flex: 1;
   }
 
   .passport {
@@ -6189,6 +6307,7 @@ body.is-finale #main {
         const correct = local.current.every((value, index) => value === local.target[index]);
         if (!correct) {
           local.errors += 1;
+          if (local.errors === 1) api.cheat("5 位二进制不用自己会算 —— 可以让 Agent 替你打孔。");
           card.classList.remove("is-shaking");
           void card.offsetWidth;
           card.classList.add("is-shaking");
@@ -6460,19 +6579,13 @@ body.is-finale #main {
           local.errors >= 2
             ? `<div class="hint-plan">可以照这个顺序接一遍：${SOLUTION.map((id) => INSTRUCTIONS[id].text).join(
                 " → "
-              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。
-              <button class="hint-assist" type="button" data-assist>让 Agent 接手这一关</button></div>`
+              )}。接错了用每行右边的 ↑ ↓ 换位置，或者 × 拆掉重接。</div>`
             : "";
         hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
           diagnose()
         )}</div>${plan}`;
         hintEl.hidden = false;
       };
-
-      hintEl.addEventListener("click", (event) => {
-        if (!event.target.closest("[data-assist]") || local.running || local.locked) return;
-        api.assist();
-      });
 
       const executeInstruction = (id) => {
         switch (id) {
@@ -6533,6 +6646,7 @@ body.is-finale #main {
         const output = local.registers.OUT === null ? "--" : local.registers.OUT;
         log(`OUTPUT: ${output} / TARGET: 7`);
         showHint();
+        if (local.errors === 1) api.cheat("顺序错了不代表你不会 —— 机器只会从上往下执行。可以让 Agent 替你接线。");
         CTM.audio.error();
       };
 
@@ -6811,19 +6925,13 @@ body.is-finale #main {
       const showHint = (cause) => {
         const plan =
           local.errors >= 2
-            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。
-               <button class="hint-assist" type="button" data-assist>让 Agent 接手这一关</button></div>`
+            ? `<div class="hint-plan">一条能跑通的管道：<code>cat access.log | grep ERROR | grep 500 | wc -l</code>。</div>`
             : "";
         hintEl.innerHTML = `<div class="hint-head">为什么不对</div><div class="hint-cause">${CTM.utils.escapeHtml(
           cause
         )}</div>${plan}`;
         hintEl.hidden = false;
       };
-
-      hintEl.addEventListener("click", (event) => {
-        if (!event.target.closest("[data-assist]") || local.locked) return;
-        api.assist();
-      });
 
       const runPipeline = () => {
         if (local.locked) return;
@@ -6863,6 +6971,7 @@ body.is-finale #main {
         }
         local.errors += 1;
         showHint(diagnose(count));
+        if (local.errors === 1) api.cheat("grep 按字符匹配，坑就在这里。可以让 Agent 替你接这条管道。");
       };
 
       const onTrayClick = (event) => {
@@ -7422,6 +7531,10 @@ body.is-finale #main {
         }
         phoneStatus.textContent = "TIMEOUT";
         api.toast(`有 ${errors} 个请求超时。${local.cache ? "再加一台服务器。" : "试试开缓存，或者再加一台服务器。"}`);
+        if (!local.cheated) {
+          local.cheated = true;
+          api.cheat("容量和预算本来就不该心算。可以让 Agent 替你配一套。");
+        }
         CTM.audio.error();
         setBusy(false);
       };
@@ -7777,7 +7890,17 @@ body.is-finale #main {
       const regenBtn = root.querySelector("[data-regen]");
       const adoptBtn = root.querySelector("[data-adopt]");
 
-      const local = { goal: "tool", style: "cyber", seed: 1024, regenCount: 0, generated: null, locked: false, timer: null, cancelled: false };
+      const local = {
+        goal: "tool",
+        style: "cyber",
+        seed: 1024,
+        regenCount: 0,
+        generated: null,
+        locked: false,
+        timer: null,
+        idleTimer: null,
+        cancelled: false,
+      };
 
       const addMessage = (role, html) => {
         const el = document.createElement("div");
@@ -7930,10 +8053,17 @@ body.is-finale #main {
       window.setTimeout(() => {
         if (!local.locked && !local.cancelled) promptInput.focus({ preventScroll: true });
       }, 400);
+      /* 站着不动 40 秒，等同于答错 —— 给同一个出口 */
+      local.idleTimer = window.setTimeout(() => {
+        if (!local.locked && !local.cancelled && !promptInput.value.trim()) {
+          api.cheat("想不出来很正常 —— 让 Agent 替你写一句？");
+        }
+      }, 40000);
 
       return () => {
         local.cancelled = true;
         if (local.timer) clearTimeout(local.timer);
+        if (local.idleTimer) clearTimeout(local.idleTimer);
         goalsEl.removeEventListener("click", onGoalClick);
         stylesEl.removeEventListener("click", onStyleClick);
         suggestionsEl.removeEventListener("click", onSuggestion);
@@ -9442,6 +9572,7 @@ body.is-finale #main {
   let timerId = null;
   let lastTickMinute = null;
   let takingOver = false;
+  let cheatRefused = null;
 
   const escapeHtml = utils.escapeHtml;
 
@@ -9862,6 +9993,7 @@ body.is-finale #main {
     ui.showScreen("era");
     ui.updatePassport();
     removeContinueCard();
+    removeCheatCard();
 
     const root = $("#era-root");
     if (!root) return;
@@ -9876,6 +10008,9 @@ body.is-finale #main {
       },
       assist() {
         CTM.agent.assistCurrent(index);
+      },
+      cheat(reason) {
+        showCheatCard(index, reason);
       },
       complete(score, choice, options) {
         completeEra(index, score, choice, options || {});
@@ -9899,6 +10034,47 @@ body.is-finale #main {
   function removeContinueCard() {
     const existing = $("#era-continue");
     if (existing) existing.remove();
+  }
+
+  function removeCheatCard() {
+    const existing = $("#cheat-card");
+    if (existing) existing.remove();
+    document.body.classList.remove("has-cheat");
+  }
+
+  /* 第一次答错后给一个诚实的作弊口：可以自动填，但档案会记下来 */
+  function showCheatCard(index, reason) {
+    if (state.stamps.includes(index) || cheatRefused === index) return;
+    removeCheatCard();
+    const era = ERAS[index];
+    const card = document.createElement("div");
+    card.className = "cheat-card";
+    card.id = "cheat-card";
+    card.innerHTML = `<div class="cc-kicker">CHEAT CODE · ${era.year}</div>
+      <div class="cc-body">
+        <div class="cc-text">${escapeHtml(
+          reason || "卡住了？可以让 Agent 帮你把这一关填完。"
+        )}<span class="cc-note">档案会写明这一站是代打的</span></div>
+        <div class="cc-actions">
+          <button class="cc-go" type="button" data-cheat-go>自动帮我填</button>
+          <button class="cc-no" type="button" data-cheat-no>我再想想</button>
+        </div>
+      </div>`;
+    document.body.appendChild(card);
+    document.body.classList.add("has-cheat");
+
+    card.querySelector("[data-cheat-no]").addEventListener("click", () => {
+      cheatRefused = index;
+      removeCheatCard();
+      audio.click();
+    });
+    card.querySelector("[data-cheat-go]").addEventListener("click", async () => {
+      removeCheatCard();
+      cheatRefused = index;
+      CTM.agent.mode = "assist";
+      await CTM.agent.assistCurrent(index);
+    });
+    audio.error();
   }
 
   function showContinueCard(index, label) {
@@ -10088,7 +10264,7 @@ body.is-finale #main {
         <ul class="help-list">
           <li>全程限时 <b>1024 秒</b>，从你按下“启动时间机器”开始算。顶栏右侧有倒计时。</li>
           <li>时间用完会自动进入 <b>Agent 接管</b>：AI 接手剩下的站，把答案接给你看。档案会如实写明哪几站是它替你 Build 的，指挥维度按接管行为计分 —— 你也可以随时点“我来”拿回控制权。</li>
-          <li>在 1945 和 1972 连续答错两次，提示面板里会出现“让 Agent 接手这一关”。</li>
+          <li>第一次答错，会弹出 <b>CHEAT CODE</b>：可以让 Agent 自动帮你填这一关。用了作弊，档案会如实写明这一站是代打的，指挥维度按接管行为计分；不想用点“我再想想”，同一关不会再劝你。</li>
           <li>通关后会有一段 24 秒的结尾动画：同一个孔，从 1804 年的纸带一路变成 2026 年的光标。</li>
           <li>全部交互都可以用鼠标或键盘完成，不依赖拖拽。</li>
           <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇、生成提示音。右上角可以随时静音。</li>
@@ -10125,6 +10301,7 @@ body.is-finale #main {
     const startButton = $("#start-btn");
     if (startButton) startButton.disabled = true;
     ui.resetState();
+    cheatRefused = null;
     state.traveler = name;
     state.started = true;
     state.startedAt = Date.now();

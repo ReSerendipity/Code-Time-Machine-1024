@@ -267,7 +267,17 @@
       const regenBtn = root.querySelector("[data-regen]");
       const adoptBtn = root.querySelector("[data-adopt]");
 
-      const local = { goal: "tool", style: "cyber", seed: 1024, regenCount: 0, generated: null, locked: false, timer: null, cancelled: false };
+      const local = {
+        goal: "tool",
+        style: "cyber",
+        seed: 1024,
+        regenCount: 0,
+        generated: null,
+        locked: false,
+        timer: null,
+        idleTimer: null,
+        cancelled: false,
+      };
 
       const addMessage = (role, html) => {
         const el = document.createElement("div");
@@ -420,10 +430,17 @@
       window.setTimeout(() => {
         if (!local.locked && !local.cancelled) promptInput.focus({ preventScroll: true });
       }, 400);
+      /* 站着不动 40 秒，等同于答错 —— 给同一个出口 */
+      local.idleTimer = window.setTimeout(() => {
+        if (!local.locked && !local.cancelled && !promptInput.value.trim()) {
+          api.cheat("想不出来很正常 —— 让 Agent 替你写一句？");
+        }
+      }, 40000);
 
       return () => {
         local.cancelled = true;
         if (local.timer) clearTimeout(local.timer);
+        if (local.idleTimer) clearTimeout(local.idleTimer);
         goalsEl.removeEventListener("click", onGoalClick);
         stylesEl.removeEventListener("click", onStyleClick);
         suggestionsEl.removeEventListener("click", onSuggestion);

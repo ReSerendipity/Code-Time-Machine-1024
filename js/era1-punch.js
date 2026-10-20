@@ -149,6 +149,7 @@
         const correct = local.current.every((value, index) => value === local.target[index]);
         if (!correct) {
           local.errors += 1;
+          if (local.errors === 1) api.cheat("5 位二进制不用自己会算 —— 可以让 Agent 替你打孔。");
           card.classList.remove("is-shaking");
           void card.offsetWidth;
           card.classList.add("is-shaking");
