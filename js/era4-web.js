@@ -124,7 +124,7 @@
         if (local.blocks.has("link")) parts.push(`<a class="web-link" href="#" data-web-link>${link}</a>`);
         if (local.blocks.has("counter")) parts.push(`<div class="hit-counter">VISITORS <b data-hits>${hits}</b></div>`);
         if (local.blocks.has("guestbook")) parts.push('<button class="web-guestbook" type="button" data-guestbook>留言簿</button>');
-        if (!local.blocks.size) parts.push('<div class="web-empty">空白页面。<br>从右边的 Page Builder 添加一个标题。</div>');
+        if (!local.blocks.size) parts.push('<div class="web-empty">空白页面。<br>在 Page Builder 里加一个标题。</div>');
         parts.push(
           `<div class="construction ${local.published ? "is-hidden" : ""}" aria-hidden="${local.published}">UNDER CONSTRUCTION</div>`
         );
