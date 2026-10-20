@@ -1,0 +1,9 @@
+node_modules/
+video/
+shots-single/
+test-*.js
+debug-*.js
+record-demo.js
+*.log
+.DS_Store
+code-time-machine.html
