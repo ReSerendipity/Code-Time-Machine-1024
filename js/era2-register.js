@@ -11,8 +11,7 @@
   };
 
   const ORDER = ["loadA", "loadB", "add", "out", "sub", "jmp"];
-
-  const tubes = Array.from({ length: 7 }, () => '<span class="tube"></span>').join("");
+  const tubes = Array.from({ length: 9 }, () => '<span class="tube"></span>').join("");
 
   CTM.eras.push({
     id: "register",
@@ -21,63 +20,57 @@
     theme: "register",
     icon: "register",
     place: "宾夕法尼亚 · ENIAC",
-    intro: "一整间屋子的真空管，只为了做一次加法。你得把想法拆成机器听得懂的几条指令。",
-    task: "让寄存器 A + B，输出 7",
-    taskDesc: "从 6 条指令里选 4 条，按正确顺序放进程序。机器只认识顺序。",
     sources: [
       "1945 年，ENIAC 在宾夕法尼亚大学建成，是最早的通用电子计算机之一，早期编程依靠开关与接线。",
       "1952 年，Grace Hopper 的 A-0 系统让机器第一次能“翻译”人类写下的符号，被视为早期编译器。",
       "1972 年，Dennis Ritchie 在贝尔实验室发明 C 语言，让“写程序”从硬件接线变成可移植的表达。",
     ],
-    sceneHtml: `<div class="register-scene">
-      <div class="crt-monitor">
-        <div class="crt-top">
-          <div class="tube-row" aria-hidden="true">${tubes}</div>
-          <div class="crt-tag">ENIAC / 1024</div>
-        </div>
-        <div class="crt-screen">
-          <div class="registers">
-            <div class="reg" data-reg="A">
-              <div class="reg-name">A</div>
-              <div class="reg-val" data-val="A">0</div>
+    render(root, api) {
+      root.innerHTML = `<div class="room room-register">
+        <div class="machine-plate">ENIAC · 1945<span>Console 02 · 第 2 站</span></div>
+        <div class="crt-bay">
+          <div class="crt-monitor">
+            <div class="crt-top">
+              <div class="tube-row" aria-hidden="true">${tubes}</div>
+              <div class="crt-tag">PROGRAM CONTROL</div>
             </div>
-            <div class="reg" data-reg="B">
-              <div class="reg-name">B</div>
-              <div class="reg-val" data-val="B">0</div>
-            </div>
-            <div class="reg" data-reg="OUT">
-              <div class="reg-name">OUT</div>
-              <div class="reg-val" data-val="OUT">--</div>
+            <div class="crt-screen">
+              <div class="registers">
+                <div class="reg" data-reg="A"><div class="reg-name">A</div><div class="reg-val" data-val="A">0</div></div>
+                <div class="reg" data-reg="B"><div class="reg-name">B</div><div class="reg-val" data-val="B">0</div></div>
+                <div class="reg" data-reg="OUT"><div class="reg-name">OUT</div><div class="reg-val" data-val="OUT">--</div></div>
+              </div>
+              <div class="crt-log" data-log aria-live="polite">&gt; READY. 等待指令。</div>
             </div>
           </div>
-          <div class="crt-log" data-log aria-live="polite">&gt; READY. 等待指令。</div>
+          <div class="stencil">目标：OUT = 7</div>
         </div>
-      </div>
-    </div>`,
-    panelHtml: `<div class="control-label">程序 / 4 SLOTS</div>
-      <div class="program-list" data-program></div>
-      <div class="control-label">指令池</div>
-      <div class="instr-grid" data-tray>${ORDER.map((id) => {
-        return `<button class="instr" type="button" data-instr="${id}">${INSTRUCTIONS[id].text}</button>`;
-      }).join("")}</div>
-      <div class="btn-row">
-        <button class="btn btn-primary" type="button" data-run>运行</button>
-        <button class="btn btn-ghost" type="button" data-step>单步</button>
-        <button class="btn btn-quiet" type="button" data-reset>重置</button>
-      </div>
-      <p class="hint-text">目标：让 OUT 显示 7。机器只认识顺序，不认识你的意图。</p>`,
-    mount(scene, panel, api) {
-      const logEl = scene.querySelector("[data-log]");
+        <div class="console-desk">
+          <div class="patch-bay" data-program></div>
+          <div class="switchboard" data-tray>${ORDER.map(
+            (id) => `<button class="switch" type="button" data-instr="${id}"><i></i>${INSTRUCTIONS[id].text}</button>`
+          ).join("")}</div>
+          <div class="console-actions">
+            <button class="big-red" type="button" data-run>运行</button>
+            <button class="console-btn" type="button" data-step>单步</button>
+            <button class="console-btn" type="button" data-reset>重置</button>
+            <button class="console-btn" type="button" data-sources>史料</button>
+          </div>
+        </div>
+      </div>`;
+
+      const screen = root.querySelector(".crt-screen");
+      const logEl = root.querySelector("[data-log]");
       const regEls = {
-        A: scene.querySelector('[data-val="A"]'),
-        B: scene.querySelector('[data-val="B"]'),
-        OUT: scene.querySelector('[data-val="OUT"]'),
+        A: root.querySelector('[data-val="A"]'),
+        B: root.querySelector('[data-val="B"]'),
+        OUT: root.querySelector('[data-val="OUT"]'),
       };
-      const programEl = panel.querySelector("[data-program]");
-      const trayEl = panel.querySelector("[data-tray]");
-      const runBtn = panel.querySelector("[data-run]");
-      const stepBtn = panel.querySelector("[data-step]");
-      const resetBtn = panel.querySelector("[data-reset]");
+      const programEl = root.querySelector("[data-program]");
+      const trayEl = root.querySelector("[data-tray]");
+      const runBtn = root.querySelector("[data-run]");
+      const stepBtn = root.querySelector("[data-step]");
+      const resetBtn = root.querySelector("[data-reset]");
 
       const local = {
         program: [],
@@ -86,12 +79,13 @@
         stepIndex: 0,
         running: false,
         locked: false,
+        timer: null,
+        cancelled: false,
       };
 
       const reduced = api.reduced;
 
       const log = (line) => {
-        if (!logEl) return;
         logEl.textContent = logEl.textContent === "> READY. 等待指令。" ? line : `${logEl.textContent}\n${line}`;
         logEl.scrollTop = logEl.scrollHeight;
       };
@@ -99,22 +93,19 @@
       const setReg = (name, value) => {
         local.registers[name] = value;
         const el = regEls[name];
-        if (!el) return;
         el.textContent = value === null ? "--" : String(value);
         const wrapper = el.closest(".reg");
-        if (wrapper) {
-          wrapper.classList.remove("is-hot");
-          void wrapper.offsetWidth;
-          wrapper.classList.add("is-hot");
-          setTimeout(() => wrapper.classList.remove("is-hot"), 650);
-        }
+        wrapper.classList.remove("is-hot");
+        void wrapper.offsetWidth;
+        wrapper.classList.add("is-hot");
+        setTimeout(() => wrapper.classList.remove("is-hot"), 650);
       };
 
       const setBusy = (busy) => {
         runBtn.disabled = busy;
         stepBtn.disabled = busy;
         resetBtn.disabled = busy;
-        trayEl.querySelectorAll(".instr").forEach((button) => {
+        trayEl.querySelectorAll(".switch").forEach((button) => {
           button.disabled = busy;
         });
         programEl.querySelectorAll("button").forEach((button) => {
@@ -127,16 +118,16 @@
         for (let index = 0; index < 4; index += 1) {
           const id = local.program[index];
           if (!id) {
-            slots.push(`<div class="prog-slot"><span class="slot-index">0${index + 1}</span><span class="slot-text">—</span></div>`);
+            slots.push(`<div class="patch"><span class="patch-index">0${index + 1}</span><span class="patch-text">—</span></div>`);
             continue;
           }
-          slots.push(`<div class="prog-slot is-filled">
-            <span class="slot-index">0${index + 1}</span>
-            <span class="slot-text">${INSTRUCTIONS[id].text}</span>
-            <span class="slot-actions">
-              <button class="mini-btn" type="button" data-move="up" data-index="${index}" aria-label="上移" ${local.running || local.locked ? "disabled" : ""}>↑</button>
-              <button class="mini-btn" type="button" data-move="down" data-index="${index}" aria-label="下移" ${local.running || local.locked ? "disabled" : ""}>↓</button>
-              <button class="mini-btn" type="button" data-remove="${index}" aria-label="移除" ${local.running || local.locked ? "disabled" : ""}>×</button>
+          slots.push(`<div class="patch is-wired">
+            <span class="patch-index">0${index + 1}</span>
+            <span class="patch-text">${INSTRUCTIONS[id].text}</span>
+            <span class="patch-actions">
+              <button class="mini-btn" type="button" data-move="up" data-index="${index}" aria-label="上移">↑</button>
+              <button class="mini-btn" type="button" data-move="down" data-index="${index}" aria-label="下移">↓</button>
+              <button class="mini-btn" type="button" data-remove="${index}" aria-label="移除">×</button>
             </span>
           </div>`);
         }
@@ -144,9 +135,9 @@
       };
 
       const renderTray = () => {
-        trayEl.querySelectorAll(".instr").forEach((button) => {
+        trayEl.querySelectorAll(".switch").forEach((button) => {
           const used = local.program.includes(button.dataset.instr);
-          button.classList.toggle("is-used", used);
+          button.classList.toggle("is-on", used);
           button.disabled = used || local.running || local.locked;
         });
       };
@@ -162,9 +153,7 @@
         setReg("B", 0);
         setReg("OUT", null);
         local.stepIndex = 0;
-        if (clearLog && logEl) {
-          logEl.textContent = "> READY. 等待指令。";
-        }
+        if (clearLog) logEl.textContent = "> READY. 等待指令。";
       };
 
       const executeInstruction = (id) => {
@@ -172,25 +161,31 @@
           case "loadA":
             setReg("A", 3);
             log("A ← 3");
+            CTM.audio.relay();
             return { jumped: false };
           case "loadB":
             setReg("B", 4);
             log("B ← 4");
+            CTM.audio.relay();
             return { jumped: false };
           case "add":
             setReg("A", local.registers.A + local.registers.B);
             log(`A ← A + B = ${local.registers.A}`);
+            CTM.audio.relay();
             return { jumped: false };
           case "out":
             setReg("OUT", local.registers.A);
             log(`OUT ← A = ${local.registers.OUT}`);
+            CTM.audio.relay();
             return { jumped: false };
           case "sub":
             setReg("A", local.registers.A - local.registers.B);
             log(`A ← A - B = ${local.registers.A}`);
+            CTM.audio.relay();
             return { jumped: false };
           case "jmp":
             log("PC ← 0  (死循环)");
+            CTM.audio.error();
             return { jumped: true };
           default:
             return { jumped: false };
@@ -202,46 +197,41 @@
         renderAll();
         if (local.registers.OUT === 7) {
           local.locked = true;
+          screen.classList.add("is-passed");
           renderAll();
-          api.feedback("OUTPUT: 7。程序通过。", "ok");
           log("OUTPUT: 7 / PROGRAM PASSED.");
           CTM.audio.success();
-          const score = {
-            systems: Math.max(8, 20 - local.errors * 4),
-            manual: 5,
-          };
-          const successHtml = `你用 4 条指令让机器输出了 <b>7</b>。1945 年的人，就是这样和机器说话的。你犯了 ${local.errors} 次错误。`;
-          setTimeout(() => api.complete(score, { program: local.program.slice(), errors: local.errors }, successHtml), 700);
+          const score = { systems: Math.max(8, 20 - local.errors * 4), manual: 5 };
+          local.timer = setTimeout(
+            () =>
+              !local.cancelled &&
+              api.complete(score, { program: local.program.slice(), errors: local.errors }, { continueLabel: "前往 1972 →" }),
+            800
+          );
           return;
         }
-
         local.errors += 1;
         const output = local.registers.OUT === null ? "--" : local.registers.OUT;
         log(`OUTPUT: ${output} / TARGET: 7`);
-        if (local.errors >= 2) {
-          api.feedback("机器没得到 7。提示：先 LOAD A，再 LOAD B，然后 ADD A B，最后 OUT A。", "error");
-        } else {
-          api.feedback(`输出是 ${output}，不是 7。检查一下指令的顺序。`, "error");
-        }
+        api.toast(local.errors >= 2 ? "提示：先 LOAD A，再 LOAD B，然后 ADD A B，最后 OUT A。" : `输出是 ${output}，不是 7。`);
         CTM.audio.error();
       };
 
       const runAll = async () => {
         if (local.running || local.locked) return;
         if (!local.program.length) {
-          api.feedback("先从指令池里选指令。", "error");
+          api.toast("先从开关板选指令。");
           return;
         }
         if (local.program.length < 4) {
-          api.feedback(`机器需要 4 条指令，现在只有 ${local.program.length} 条。`, "error");
+          api.toast(`机器需要 4 条指令，现在只有 ${local.program.length} 条。`);
           return;
         }
         local.running = true;
         resetMachine(true);
         renderAll();
         log(`> RUN ${local.program.length} INSTRUCTIONS`);
-        await CTM.utils.sleep(reduced ? 120 : 380);
-
+        await CTM.utils.sleep(reduced ? 120 : 360);
         let jumped = false;
         for (const id of local.program) {
           if (jumped) break;
@@ -250,15 +240,13 @@
             jumped = true;
             break;
           }
-          await CTM.utils.sleep(reduced ? 80 : 440);
+          await CTM.utils.sleep(reduced ? 80 : 420);
         }
-
         if (jumped) {
           local.running = false;
           local.errors += 1;
           renderAll();
-          api.feedback("JMP 0 把程序计数器带回了起点，机器过热了。换一条指令吧。", "error");
-          CTM.audio.error();
+          api.toast("JMP 0 把程序计数器带回了起点，机器过热了。");
           return;
         }
         finish();
@@ -267,7 +255,7 @@
       const stepOnce = async () => {
         if (local.running || local.locked) return;
         if (!local.program.length) {
-          api.feedback("先选指令，再单步执行。", "error");
+          api.toast("先选指令，再单步执行。");
           return;
         }
         if (local.stepIndex === 0) resetMachine(true);
@@ -281,13 +269,12 @@
         }
         const result = executeInstruction(id);
         local.stepIndex += 1;
-        await CTM.utils.sleep(reduced ? 80 : 300);
+        await CTM.utils.sleep(reduced ? 80 : 260);
         if (result.jumped) {
           local.running = false;
           local.errors += 1;
           renderAll();
-          api.feedback("JMP 0 让程序计数器回到了起点。机器过热。", "error");
-          CTM.audio.error();
+          api.toast("JMP 0 让程序计数器回到了起点。机器过热。");
           return;
         }
         if (local.stepIndex >= local.program.length) {
@@ -296,7 +283,6 @@
         }
         local.running = false;
         renderAll();
-        api.feedback(`已执行 ${local.stepIndex} / ${local.program.length} 条。继续单步，或直接运行。`, "");
       };
 
       const onProgramClick = (event) => {
@@ -304,8 +290,7 @@
         const move = event.target.closest("[data-move]");
         if (move) {
           const index = Number(move.dataset.index);
-          const dir = move.dataset.move;
-          const target = dir === "up" ? index - 1 : index + 1;
+          const target = move.dataset.move === "up" ? index - 1 : index + 1;
           if (target < 0 || target >= local.program.length) return;
           const temp = local.program[index];
           local.program[index] = local.program[target];
@@ -326,24 +311,24 @@
         const button = event.target.closest("[data-instr]");
         if (!button || local.running || local.locked) return;
         if (local.program.length >= 4) {
-          api.feedback("程序只有 4 个槽位。先移除一条，再选新的。", "error");
+          api.toast("接线板只有 4 个槽位。");
           return;
         }
         local.program.push(button.dataset.instr);
         renderAll();
-        CTM.audio.click();
+        CTM.audio.relay();
       };
 
       const onReset = () => {
         if (local.running) return;
         local.program = [];
         local.errors = 0;
-        local.stepIndex = 0;
         local.locked = false;
         local.running = false;
+        screen.classList.remove("is-passed");
         resetMachine(true);
         renderAll();
-        api.feedback("机器已重置。先从指令池里选 4 条。", "");
+        api.toast("机器已重置。");
         CTM.audio.click();
       };
 
@@ -356,6 +341,8 @@
       renderAll();
 
       return () => {
+        local.cancelled = true;
+        if (local.timer) clearTimeout(local.timer);
         programEl.removeEventListener("click", onProgramClick);
         trayEl.removeEventListener("click", onTrayClick);
         runBtn.removeEventListener("click", runAll);

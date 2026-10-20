@@ -15,68 +15,71 @@
     theme: "cloud",
     icon: "cloud",
     place: "旧金山 · 一台刚发布的 iPhone",
-    intro: "把作品装进口袋，再让它住进云里。用户不会等你扩容，他们只会刷新。",
-    task: "让 1024 个请求平稳落地",
-    taskDesc: "预算 $9。每台服务器 $2，容量 300；缓存 $1，负载降低 40%。超时要少于 10 个。",
     sources: [
       "2007 年，iPhone 发布，Web 从桌面走进每个人的口袋，移动端成为新的默认。",
       "云计算的弹性扩容让“先上线、再扩容”成为可能，但也让容量规划变成每个 Builder 的必修课。",
       "缓存、队列、限流、自动扩缩容，是应对突发流量的四种常见手段；本关只用了前两种。",
     ],
-    sceneHtml: `<div class="cloud-scene">
-      <div class="phone" data-phone>
-        <div class="phone-notch" aria-hidden="true"></div>
-        <div class="phone-screen">
-          <div class="phone-status"><span data-phone-status>STANDBY</span><span>1024</span></div>
-          <div class="app-icon">1024</div>
-          <div class="app-name">BUILDER APP</div>
+    render(root, api) {
+      root.innerHTML = `<div class="room room-cloud">
+        <div class="dash-head">Builder Cloud · 2007<span>第 5 站 · 旧金山</span></div>
+        <div class="dash-grid">
+          <div class="dash-phone">
+            <div class="phone" data-phone>
+              <div class="phone-notch" aria-hidden="true"></div>
+              <div class="phone-screen">
+                <div class="phone-status"><span data-phone-status>STANDBY</span><span>1024</span></div>
+                <div class="app-icon">1024</div>
+                <div class="app-name">BUILDER APP</div>
+              </div>
+            </div>
+          </div>
+          <div class="dash-chart">
+            <div class="cloud-glow" aria-hidden="true"></div>
+            <div class="server-racks" data-racks aria-hidden="true">
+              <div class="rack"><span class="rack-led"></span></div>
+              <div class="rack"><span class="rack-led"></span></div>
+              <div class="rack"><span class="rack-led"></span></div>
+              <div class="rack"><span class="rack-led"></span></div>
+            </div>
+            <canvas class="cloud-chart" data-chart></canvas>
+            <div class="cloud-readout">
+              <div class="readout">有效请求<b data-req>1024</b></div>
+              <div class="readout">容量<b data-cap>600</b></div>
+              <div class="readout">预计超时<b data-err>424</b></div>
+            </div>
+          </div>
+          <div class="dash-settings">
+            <div class="settings-head">Load Test<span>预算 $9</span></div>
+            <div class="setting-row">
+              <label for="cloud-servers">服务器 <b data-servers-label>2</b> 台</label>
+              <input id="cloud-servers" type="range" min="1" max="4" step="1" value="2" data-servers>
+            </div>
+            <label class="setting-row switch-row"><input type="checkbox" data-cache> 开启缓存 <span>+$1 · 负载 -40%</span></label>
+            <div class="setting-row budget-line">花费<b data-cost>$4</b></div>
+            <div class="dash-actions">
+              <button class="btn btn-primary" type="button" data-cloud-run>开始压测</button>
+              <button class="btn btn-ghost" type="button" data-cloud-reset>重置</button>
+              <button class="btn btn-quiet" type="button" data-sources>史料</button>
+            </div>
+            <div class="dash-note">目标：超时 &lt; 10 且花费 ≤ $9。</div>
+          </div>
         </div>
-      </div>
-      <div class="cloud-area">
-        <div class="cloud-glow" aria-hidden="true"></div>
-        <div class="server-racks" data-racks aria-hidden="true">
-          <div class="rack"><span class="rack-led"></span></div>
-          <div class="rack"><span class="rack-led"></span></div>
-          <div class="rack"><span class="rack-led"></span></div>
-          <div class="rack"><span class="rack-led"></span></div>
-        </div>
-        <canvas class="cloud-chart" data-chart></canvas>
-        <div class="cloud-readout">
-          <div class="readout">有效请求<b data-req>1024</b></div>
-          <div class="readout">容量<b data-cap>600</b></div>
-          <div class="readout">预计超时<b data-err>424</b></div>
-        </div>
-      </div>
-    </div>`,
-    panelHtml: `<div class="cloud-controls">
-        <div class="range-row">
-          <label for="cloud-servers">服务器 <b data-servers-label>2</b> 台</label>
-          <input id="cloud-servers" type="range" min="1" max="4" step="1" value="2" data-servers>
-        </div>
-        <label class="switch-row">
-          <input type="checkbox" data-cache> 开启缓存 <span>+$1 · 负载 -40%</span>
-        </label>
-        <div class="budget-line">预算 $${BUDGET}<b data-cost>$5</b></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" type="button" data-cloud-run>开始压测</button>
-        <button class="btn btn-quiet" type="button" data-cloud-reset>重置</button>
-      </div>
-      <p class="hint-text">目标：超时 &lt; 10 且花费 ≤ $9。3 台服务器 + 缓存是更便宜的解法。</p>`,
-    mount(scene, panel, api) {
-      const phone = scene.querySelector("[data-phone]");
-      const phoneStatus = scene.querySelector("[data-phone-status]");
-      const racks = Array.from(scene.querySelectorAll(".rack"));
-      const chart = scene.querySelector("[data-chart]");
-      const reqEl = scene.querySelector("[data-req]");
-      const capEl = scene.querySelector("[data-cap]");
-      const errEl = scene.querySelector("[data-err]");
-      const serversInput = panel.querySelector("[data-servers]");
-      const serversLabel = panel.querySelector("[data-servers-label]");
-      const cacheInput = panel.querySelector("[data-cache]");
-      const costEl = panel.querySelector("[data-cost]");
-      const runBtn = panel.querySelector("[data-cloud-run]");
-      const resetBtn = panel.querySelector("[data-cloud-reset]");
+      </div>`;
+
+      const phone = root.querySelector("[data-phone]");
+      const phoneStatus = root.querySelector("[data-phone-status]");
+      const racks = Array.from(root.querySelectorAll(".rack"));
+      const chart = root.querySelector("[data-chart]");
+      const reqEl = root.querySelector("[data-req]");
+      const capEl = root.querySelector("[data-cap]");
+      const errEl = root.querySelector("[data-err]");
+      const serversInput = root.querySelector("[data-servers]");
+      const serversLabel = root.querySelector("[data-servers-label]");
+      const cacheInput = root.querySelector("[data-cache]");
+      const costEl = root.querySelector("[data-cost]");
+      const runBtn = root.querySelector("[data-cloud-run]");
+      const resetBtn = root.querySelector("[data-cloud-reset]");
 
       const local = {
         servers: 2,
@@ -91,7 +94,6 @@
       };
 
       const reduced = api.reduced;
-
       const capacity = () => local.servers * SERVER_CAPACITY;
       const effectiveDemand = () => TOTAL_REQUESTS * (local.cache ? CACHE_FACTOR : 1);
       const cost = () => local.servers * SERVER_COST + (local.cache ? CACHE_COST : 0);
@@ -120,12 +122,10 @@
         if (!ctx) return;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, width, height);
-
         const pad = 8;
         const max = Math.max(TOTAL_REQUESTS, cap, demand, 1);
         const x = (value) => pad + (value / max) * (width - pad * 2);
         const y = (value) => height - pad - (value / max) * (height - pad * 2);
-
         ctx.strokeStyle = "rgba(255,255,255,0.06)";
         ctx.lineWidth = 1;
         for (let i = 0; i <= 3; i += 1) {
@@ -135,7 +135,6 @@
           ctx.lineTo(width - pad, gy);
           ctx.stroke();
         }
-
         const lineY = y(cap);
         ctx.strokeStyle = "rgba(177,140,255,0.7)";
         ctx.setLineDash([4, 4]);
@@ -144,24 +143,18 @@
         ctx.lineTo(width - pad, lineY);
         ctx.stroke();
         ctx.setLineDash([]);
-
         const points = [];
         const steps = 48;
         for (let i = 0; i <= steps; i += 1) {
-          const t = (i / steps) * progress;
-          const value = demand * t;
+          const value = demand * ((i / steps) * progress);
           points.push({ x: x(value), y: y(value), value });
         }
-
         if (!idle) {
           ctx.fillStyle = "rgba(255,120,120,0.16)";
           points.forEach((point) => {
-            if (point.value > cap) {
-              ctx.fillRect(point.x, y(point.value), Math.max(1, (width - pad * 2) / steps), y(cap) - y(point.value));
-            }
+            if (point.value > cap) ctx.fillRect(point.x, y(point.value), Math.max(1, (width - pad * 2) / steps), y(cap) - y(point.value));
           });
         }
-
         ctx.strokeStyle = idle ? "rgba(111,195,255,0.35)" : "rgba(111,195,255,0.95)";
         ctx.lineWidth = 1.6;
         ctx.beginPath();
@@ -170,12 +163,10 @@
           else ctx.lineTo(point.x, point.y);
         });
         ctx.stroke();
-
         ctx.fillStyle = idle ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.55)";
         ctx.font = '9px "SFMono-Regular", Consolas, monospace';
         ctx.fillText("请求", pad + 2, pad + 10);
         ctx.fillText("容量", pad + 2, lineY - 4);
-
         if (errors > 0 && !idle) {
           ctx.fillStyle = "rgba(255,140,140,0.9)";
           ctx.textAlign = "right";
@@ -211,42 +202,25 @@
         local.tested = true;
         local.errors = errors;
         renderRacks();
-
         if (errors < 10) {
           local.locked = true;
           setBusy(true);
           phone.classList.add("is-live");
           phoneStatus.textContent = "LIVE";
-          api.feedback(`1024 个请求，${errors} 次超时。上线成功。`, "ok");
-          CTM.audio.success();
-          const systems = 8 + (local.cache ? 4 : 0) + (local.servers >= 3 ? 3 : 0);
-          const direction = 5 + (cost() <= 7 ? 5 : 0);
-          const score = {
-            systems: Math.min(15, systems),
-            direction: Math.min(10, direction),
-          };
-          const successHtml = `1024 个请求，${errors} 次超时。你用 <b>${local.servers} 台服务器${
-            local.cache ? " + 缓存" : ""
-          }</b>，花了 <b>$${cost()}</b>。你把作品送上了云。`;
+          CTM.audio.scaleUp();
+          const systems = Math.min(15, 8 + (local.cache ? 4 : 0) + (local.servers >= 3 ? 3 : 0));
+          const direction = Math.min(10, 5 + (cost() <= 7 ? 5 : 0));
+          const score = { systems, direction };
           local.finishTimer = setTimeout(
             () =>
               !local.cancelled &&
-              api.complete(
-                score,
-                { servers: local.servers, cache: local.cache, cost: cost(), errors },
-                successHtml
-              ),
-            850
+              api.complete(score, { servers: local.servers, cache: local.cache, cost: cost(), errors }, { continueLabel: "前往 2026 →" }),
+            900
           );
           return;
         }
-
-        phone.classList.remove("is-live");
         phoneStatus.textContent = "TIMEOUT";
-        api.feedback(
-          `有 ${errors} 个请求超时。${local.cache ? "缓存已经开了，再加一台服务器。" : "试试开缓存，或者再加一台服务器。"}`,
-          "error"
-        );
+        api.toast(`有 ${errors} 个请求超时。${local.cache ? "再加一台服务器。" : "试试开缓存，或者再加一台服务器。"}`);
         CTM.audio.error();
         setBusy(false);
       };
@@ -257,16 +231,13 @@
         local.tested = false;
         setBusy(true);
         runBtn.textContent = "压测中…";
-        phone.classList.remove("is-live");
         phoneStatus.textContent = "DEPLOYING";
-        api.feedback("正在把 1024 个请求压进去……", "");
-
+        CTM.audio.fan();
         const demand = effectiveDemand();
         const cap = capacity();
         const errors = potentialErrors();
         const duration = reduced ? 250 : 4800;
         const start = performance.now();
-
         const frame = (now) => {
           if (local.cancelled) return;
           const progress = Math.min(1, (now - start) / duration);
@@ -275,17 +246,14 @@
           setReadout(currentDemand, cap, currentErrors);
           drawChart(progress, demand, cap, errors, false);
           renderRacks();
-
-          if (progress < 1) {
-            local.raf = requestAnimationFrame(frame);
-          } else {
+          if (progress < 1) local.raf = requestAnimationFrame(frame);
+          else {
             setReadout(demand, cap, errors);
             drawChart(1, demand, cap, errors, false);
             runBtn.textContent = errors < 10 ? "已上线" : "再试一次";
             finish(errors);
           }
         };
-
         local.raf = requestAnimationFrame(frame);
       };
 
@@ -293,14 +261,12 @@
         if (local.running || local.locked) return;
         local.servers = Number(serversInput.value);
         updateIdle();
-        api.feedback(`已选择 ${local.servers} 台服务器。`, "");
       };
 
       const onCacheChange = () => {
         if (local.running || local.locked) return;
         local.cache = cacheInput.checked;
         updateIdle();
-        api.feedback(local.cache ? "缓存已开启：负载降低 40%。" : "缓存已关闭。", "");
       };
 
       const onReset = () => {
@@ -313,9 +279,8 @@
         cacheInput.checked = false;
         runBtn.textContent = "开始压测";
         phone.classList.remove("is-live");
-        phoneStatus.textContent = "STANDBY";
         updateIdle();
-        api.feedback("配置已重置。2 台服务器，无缓存。", "");
+        api.toast("配置已重置。");
         CTM.audio.click();
       };
 

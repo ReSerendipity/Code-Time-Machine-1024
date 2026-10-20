@@ -19,15 +19,14 @@ TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
 
 ## 预览
 
-![启动页](screenshots/01-landing.png)
+六个时代是六间不同的房间，不是同一套模板换色。
 
-![打孔卡](screenshots/02-era1-punch.png)
-
-![Unix / C](screenshots/06-era3-unix.png)
-
-![AI 时代](screenshots/13-era6-generated.png)
-
-![结果档案](screenshots/15-result.png)
+| 启动页 | 1804 · 织机工坊 |
+| --- | --- |
+| ![启动页](screenshots/01-landing.png) | ![打孔卡](screenshots/02-era1-punch.png) |
+| ![1945 · 控制台](screenshots/04-era2-register.png) | ![1972 · 电传机](screenshots/06-era3-unix.png) |
+| ![1991 · 桌面](screenshots/08-era4-web.png) | ![2007 · 云仪表盘](screenshots/10-era5-cloud.png) |
+| ![2026 · 对话](screenshots/13-era6-generated.png) | ![结果档案](screenshots/15-result.png) |
 
 | 可下载海报 | 手机端 |
 | --- | --- |
@@ -36,8 +35,9 @@ TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
 ## 怎么玩
 
 - 直接打开在线 Demo，或双击 `docs/index.html` 离线游玩。
-- 全程 6 站，每站 30-60 秒，不需要读说明书。
+- 全程 6 站，每站 30-60 秒，不需要读说明书：目标写在房间里，不在说明书里。
 - 所有交互都可以用鼠标或键盘完成，不依赖拖拽。
+- 声音默认开启，每一站有自己的音色：打孔、继电器、电传打印、拨号上网、机房风扇、生成提示音。右上角可随时静音。
 - 在任意页面输入 `1024`，有一个隐藏频道。
 - AI 时代是**本地生成模拟**，不调用真实大模型，不消耗 API Key。
 
@@ -61,10 +61,10 @@ node build.js
 
 - 原生 HTML / CSS / JavaScript，无框架、无构建依赖。
 - Canvas 2D：时间隧道、雷达、海报、隐藏结局粒子。
-- Web Audio API：合成音效，无音频文件。
+- Web Audio API：振荡器 + 噪声缓冲实时合成六套时代音色，无音频文件。
 - localStorage：刷新继续；URL hash：分享结果。
 - 单文件、零外部字体 / 图片 / 音频 / 图标库，可离线运行。
-- 支持 `prefers-reduced-motion`，手机 390px 已验证。
+- 支持 `prefers-reduced-motion`，手机 390px / 360px / 320px 已验证。
 
 ## 隐私与 AI 说明
 
@@ -76,7 +76,7 @@ node build.js
 
 ```
 index.html            # 开发版入口
-styles.css            # 全局样式与六套时代皮肤
+styles.css            # 全局样式与六间房间
 js/                   # 状态、音效、六个时代、结果页、主流程
 docs/index.html       # GitHub Pages 发布的单文件版
 docs/.nojekyll        # 关闭 Jekyll

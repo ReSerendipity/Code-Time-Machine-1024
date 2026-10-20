@@ -62,7 +62,7 @@
     eraScores: [null, null, null, null, null, null],
     choices: {},
     ai: null,
-    sound: false,
+    sound: true,
     started: false,
     completed: false,
     startedAt: null,
@@ -107,6 +107,7 @@
     save() {
       try {
         const payload = {
+          v: 2,
           traveler: state.traveler,
           eraIndex: state.eraIndex,
           stamps: state.stamps,
@@ -268,8 +269,7 @@
       return true;
     },
 
-    resetState(keepSound) {
-      const sound = keepSound ? state.sound : false;
+    resetState() {
       state.traveler = "";
       state.eraIndex = 0;
       state.stamps = [];
@@ -277,7 +277,6 @@
       state.eraScores = [null, null, null, null, null, null];
       state.choices = {};
       state.ai = null;
-      state.sound = sound;
       state.started = false;
       state.completed = false;
       state.startedAt = null;

@@ -10,7 +10,6 @@
   const ERAS = CTM.eras;
 
   let currentCleanup = null;
-  let currentEraIndex = -1;
   let eraCompleted = false;
   let starting = false;
   let futureReturn = { screen: "landing", theme: "landing" };
@@ -19,13 +18,12 @@
   let bootStarted = false;
   let keyBuffer = "";
 
-  const pad2 = (value) => String(value).padStart(2, "0");
   const escapeHtml = utils.escapeHtml;
 
   function restoreSaved() {
     const saved = CTM.storage.load();
     if (!saved) {
-      audio.restore(false);
+      audio.restore(state.sound);
       updateContinueUI();
       return;
     }
@@ -54,7 +52,7 @@
     });
     state.choices = saved.choices && typeof saved.choices === "object" ? saved.choices : {};
     state.ai = saved.ai && typeof saved.ai === "object" ? saved.ai : null;
-    state.sound = Boolean(saved.sound);
+    state.sound = Number(saved.v) >= 2 ? Boolean(saved.sound) : true;
     state.started = Boolean(saved.started) || state.stamps.length > 0 || Boolean(saved.completed);
     state.completed = Boolean(saved.completed) || state.stamps.length >= ERAS.length;
     state.startedAt = Number(saved.startedAt) || null;
@@ -339,7 +337,6 @@
     }
 
     eraCompleted = false;
-    currentEraIndex = index;
     state.eraIndex = index;
     state.started = true;
     if (!state.startedAt) state.startedAt = Date.now();
@@ -349,107 +346,108 @@
     ui.setTheme(era.theme);
     ui.showScreen("era");
     ui.updatePassport();
+    removeContinueCard();
 
     const root = $("#era-root");
     if (!root) return;
-    root.innerHTML = `<div class="era-shell">
-      <header class="era-head">
-        <div class="era-kicker">STATION ${pad2(index + 1)} / ${era.year} · ${escapeHtml(era.place)}</div>
-        <div class="era-head-row">
-          <h2 class="era-title" id="era-title">${escapeHtml(era.label)}</h2>
-          <button class="btn btn-quiet" type="button" data-source>史料</button>
-        </div>
-        <p class="era-intro">${escapeHtml(era.intro)}</p>
-      </header>
-      <div class="era-grid">
-        <div class="scene" data-scene>${era.sceneHtml}</div>
-        <div class="panel">
-          <div class="task-card">
-            <div class="task-label">YOUR TASK / ${pad2(index + 1)}</div>
-            <h3 class="task-title">${escapeHtml(era.task)}</h3>
-            <p class="task-desc">${escapeHtml(era.taskDesc)}</p>
-            <div class="feedback" data-feedback aria-live="polite"></div>
-          </div>
-          <div class="panel-controls">${era.panelHtml}</div>
-        </div>
-      </div>
-    </div>`;
-
-    const scene = root.querySelector("[data-scene]");
-    const panel = root.querySelector(".panel-controls");
-    const feedback = root.querySelector("[data-feedback]");
-    const sourceButton = root.querySelector("[data-source]");
-    if (sourceButton) sourceButton.addEventListener("click", () => openSources(era));
+    root.innerHTML = "";
 
     const api = {
       sound: audio,
       reduced: utils.prefersReduced(),
       toast: ui.toast,
-      feedback(message, type) {
-        if (!feedback) return;
-        feedback.textContent = message || "";
-        feedback.className = `feedback${type ? ` is-${type}` : ""}`;
+      openSources() {
+        openSources(era);
       },
-      complete(score, choice, successHtml) {
-        completeEra(index, score, choice, successHtml);
+      complete(score, choice, options) {
+        completeEra(index, score, choice, options || {});
       },
     };
 
     try {
-      currentCleanup = era.mount(scene, panel, api) || null;
+      currentCleanup = era.render(root, api) || null;
     } catch (error) {
       console.error(error);
-      if (panel) {
-        panel.innerHTML = '<p class="hint-text">这一站加载失败。请刷新页面重试。</p>';
-      }
+      root.innerHTML = '<p class="hint-text">这一站加载失败。请刷新页面重试。</p>';
     }
+
+    $$("[data-sources]", root).forEach((button) => {
+      button.addEventListener("click", () => openSources(era));
+    });
 
     window.scrollTo({ top: 0, behavior: utils.prefersReduced() ? "auto" : "smooth" });
   }
 
-  function completeEra(index, score, choice, successHtml) {
+  function removeContinueCard() {
+    const existing = $("#era-continue");
+    if (existing) existing.remove();
+  }
+
+  function showContinueCard(index, label) {
+    removeContinueCard();
+    const era = ERAS[index];
+    const isLast = index >= ERAS.length - 1;
+    const card = document.createElement("div");
+    card.className = "era-continue";
+    card.id = "era-continue";
+    card.innerHTML = `<div class="ec-stamp">${CTM.icons[era.icon] || ""}<span>${era.year}</span></div>
+      <div class="ec-text">
+        <b>${escapeHtml(era.label)}</b>
+        <span>STAMP ${index + 1} / ${ERAS.length}</span>
+      </div>
+      <button class="ec-btn" type="button">${escapeHtml(label)}</button>`;
+    document.body.appendChild(card);
+
+    const button = card.querySelector(".ec-btn");
+    let busy = false;
+    button.addEventListener("click", async () => {
+      if (busy) return;
+      busy = true;
+      button.disabled = true;
+      card.classList.add("is-leaving");
+      audio.click();
+      const nextIndex = index + 1;
+      const nextEra = ERAS[nextIndex];
+      removeContinueCard();
+      if (isLast) {
+        await playTunnel(era.year, 2026, "正在编译你的时间旅行档案");
+        showResultFromState();
+      } else {
+        await playTunnel(era.year, nextEra.year, `正在前往 ${nextEra.year} · ${nextEra.label}`);
+        mountEra(nextIndex);
+      }
+    });
+    window.setTimeout(() => button.focus({ preventScroll: true }), 60);
+  }
+
+  function completeEra(index, score, choice, options) {
     if (eraCompleted) return;
     if (!ui.recordEra(index, score, choice)) return;
     eraCompleted = true;
 
     const era = ERAS[index];
     const nextIndex = index + 1;
+    const completed = nextIndex >= ERAS.length;
     state.eraIndex = Math.min(nextIndex, ERAS.length);
-    state.completed = nextIndex >= ERAS.length;
-    if (state.completed) state.finishedAt = Date.now();
+    state.completed = completed;
+    if (completed) state.finishedAt = Date.now();
     CTM.storage.save();
     ui.updatePassport();
 
-    ui.modal(
-      `<div class="stamp-big">${CTM.icons[era.icon] || ""}<span>${era.year}</span></div>
-      <div class="modal-kicker">STAMP ${pad2(index + 1)} / ${pad2(ERAS.length)} · ${escapeHtml(era.label)}</div>
-      <h2 class="modal-title" id="modal-title">第 ${index + 1} 枚印章</h2>
-      <div class="modal-success">${successHtml}</div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" type="button" data-next>${
-          state.completed ? "查看我的时间旅行档案" : "继续时间旅行"
-        }</button>
-      </div>`,
-      {
-        dismissible: false,
-        onMount(card, close) {
-          const nextButton = card.querySelector("[data-next]");
-          if (!nextButton) return;
-          nextButton.addEventListener("click", async () => {
-            nextButton.disabled = true;
-            close();
-            if (state.completed) {
-              await playTunnel(era.year, 2026, "正在编译你的时间旅行档案");
-              showResultFromState();
-            } else {
-              const nextEra = ERAS[nextIndex];
-              await playTunnel(era.year, nextEra.year, `正在前往 ${nextEra.year} · ${nextEra.label}`);
-              mountEra(nextIndex);
-            }
-          });
-        },
-      }
-    );
+    const stamp = $(`#passport-track .p-stamp:nth-child(${index + 1})`);
+    if (stamp) {
+      stamp.classList.add("is-fresh");
+      window.setTimeout(() => stamp.classList.remove("is-fresh"), 1200);
+    }
+
+    const room = $("#era-root .room");
+    if (room) room.classList.add("is-done");
+    audio.stamp();
+
+    const label =
+      options.continueLabel ||
+      (completed ? "查看我的时间旅行档案" : `前往 ${ERAS[nextIndex].year} →`);
+    showContinueCard(index, label);
   }
 
   function showResultFromState() {
@@ -458,6 +456,7 @@
       currentCleanup = null;
     }
     ui.closeModal();
+    removeContinueCard();
     eraCompleted = true;
     state.eraIndex = ERAS.length;
     state.completed = true;
@@ -481,6 +480,7 @@
       currentCleanup = null;
     }
     ui.closeModal();
+    removeContinueCard();
     ui.setTheme("result");
     ui.showScreen("result");
     CTM.result.show(data);
@@ -495,6 +495,7 @@
 
   function goHome() {
     ui.closeModal();
+    removeContinueCard();
     stopFutureParticles();
     if (currentCleanup) {
       currentCleanup();
@@ -512,13 +513,14 @@
 
   function resetAndHome() {
     ui.closeModal();
+    removeContinueCard();
     stopFutureParticles();
     if (currentCleanup) {
       currentCleanup();
       currentCleanup = null;
     }
     CTM.storage.clear();
-    ui.resetState(true);
+    ui.resetState();
     audio.updateButtons();
     const eraRoot = $("#era-root");
     if (eraRoot) eraRoot.innerHTML = "";
@@ -544,9 +546,10 @@
       <div class="modal-kicker">HOW IT WORKS</div>
       <h2 class="modal-title" id="modal-title">一场 6 站的时间旅行</h2>
       <div class="help-content">
-        <p>每一站对应一个编程时代，30-60 秒可完成。完成一站，旅行护照上会多一枚印章。</p>
+        <p>每一站是一间不同的房间：1804 的织机工坊、1945 的控制台、1972 的电传机、1991 的桌面、2007 的云仪表盘、2026 的对话框。30-60 秒可完成一站，完成后护照上会多一枚印章。</p>
         <ul class="help-list">
           <li>全部交互都可以用鼠标或键盘完成，不依赖拖拽。</li>
+          <li>每一站都有自己的声音：打孔、继电器、电传打印、拨号上网、机房风扇。右上角可以随时静音。</li>
           <li>最后一站会生成你的 Builder 类型、四维雷达和一张可下载的海报。</li>
           <li>所有数据只保存在你的浏览器里，不会上传。</li>
           <li>AI 时代使用本地生成模拟，不调用真实大模型，也不消耗 API Key。</li>
@@ -579,7 +582,7 @@
     starting = true;
     const startButton = $("#start-btn");
     if (startButton) startButton.disabled = true;
-    ui.resetState(true);
+    ui.resetState();
     state.traveler = name;
     state.started = true;
     state.startedAt = Date.now();
