@@ -2,7 +2,7 @@
 
 > 从打孔纸带到 AI 编程，六次回到 Build 的现场。
 
-**Live Demo:** https://reserendipity.github.io/code-time-machine-1024/
+**Live Demo:** https://reserendipity.github.io/Code-Time-Machine-1024/
 
 TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
 
