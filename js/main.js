@@ -573,7 +573,7 @@
     if (!state.finishedAt) state.finishedAt = Date.now();
     CTM.storage.save();
     const prompt = state.ai && state.ai.prompt ? state.ai.prompt : "";
-    await CTM.finale.play(prompt);
+    await CTM.finale.play(prompt, state.traveler || CTM.DEFAULT_TRAVELER);
     showResultFromState();
   }
 

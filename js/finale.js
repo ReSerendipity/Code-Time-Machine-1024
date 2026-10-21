@@ -859,159 +859,232 @@
 
   /* ---------- 揭示：整条时间线 ---------- */
 
-  function sceneReveal(ctx, w, h, p, pal) {
+  const MICRO = [
+    function tape(ctx, x, y, w, h, loop, color) {
+      ctx.fillStyle = "#b8a37c";
+      ctx.fillRect(x, y + h * 0.28, w, h * 0.44);
+      const shift = -loop * w * 0.5;
+      for (let c = 0; c < 12; c += 1) {
+        const cx = x + shift + c * (w / 7);
+        const bit = (c * 5 + 3) % 3 === 0 ? 1 : 0;
+        for (let r = 0; r < 2; r += 1) {
+          if (r !== bit) continue;
+          circle(ctx, cx, y + h * (r === 0 ? 0.38 : 0.62), Math.max(1.6, h * 0.028), "rgba(28,20,10,0.92)");
+        }
+      }
+      const drop = Math.max(0, Math.sin(loop * Math.PI * 2));
+      ctx.fillStyle = "#8a5f30";
+      ctx.fillRect(x + w * 0.5 - 2, y + h * 0.02 + (1 - drop) * h * 0.1, 4, h * 0.24);
+      if (drop > 0.85) glowAt(ctx, x + w * 0.5, y + h * 0.3, h * 0.3, "#ffe0a8", 0.5);
+    },
+    function relay(ctx, x, y, w, h, loop, color) {
+      const close = (Math.sin(loop * Math.PI * 2 - 1.2) + 1) / 2;
+      const gap = mix(w * 0.06, 2, close);
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = color;
+      ctx.fillRect(x + w * 0.18, y + h * 0.44, w * 0.26 - gap / 2, Math.max(3, h * 0.07));
+      ctx.fillRect(x + w * 0.56 + gap / 2, y + h * 0.44, w * 0.26 - gap / 2, Math.max(3, h * 0.07));
+      glowAt(ctx, x + w * 0.5, y + h * 0.48, h * 0.3, color, close * 0.5);
+      ctx.fillStyle = close > 0.6 ? "#ffe4ae" : "rgba(90,70,40,0.8)";
+      circle(ctx, x + w * 0.5, y + h * 0.2, Math.max(3, h * 0.06), close > 0.6 ? "#ffe4ae" : "rgba(90,70,40,0.8)");
+      ctx.globalAlpha = 1;
+    },
+    function unix(ctx, x, y, w, h, loop, color) {
+      const text = "$ grep ERROR";
+      const shown = Math.floor(((loop * 1.6) % 1.2) * text.length);
+      ctx.font = `600 ${Math.max(7, h * 0.16)}px ${MONO}`;
+      ctx.fillStyle = color;
+      ctx.textBaseline = "middle";
+      ctx.fillText(text.slice(0, Math.min(shown, text.length)), x + w * 0.08, y + h * 0.38);
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      for (let i = 0; i < 3; i += 1) ctx.fillRect(x + w * 0.08, y + h * (0.56 + i * 0.1), w * (0.5 - i * 0.1), 1.5);
+      if (Math.floor(loop * 8) % 2 === 0) {
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          x + w * 0.08 + Math.min(shown, text.length) * h * 0.09,
+          y + h * 0.3,
+          Math.max(1.5, w * 0.012),
+          h * 0.18
+        );
+      }
+    },
+    function web(ctx, x, y, w, h, loop, color) {
+      ctx.fillStyle = "rgba(240,240,240,0.82)";
+      ctx.fillRect(x + w * 0.12, y + h * 0.16, w * 0.76, h * 0.66);
+      ctx.fillStyle = "#0a2a8a";
+      ctx.fillRect(x + w * 0.12, y + h * 0.16, w * 0.76, h * 0.11);
+      ctx.fillStyle = "#ffe066";
+      ctx.font = `700 ${Math.max(6, h * 0.14)}px ${SANS}`;
+      ctx.textBaseline = "middle";
+      ctx.fillText("我的主页", x + w * 0.14, y + h * 0.42);
+      const hits = Math.floor((loop * 1024) % 1024);
+      ctx.fillStyle = "#0a0";
+      ctx.font = `600 ${Math.max(6, h * 0.11)}px ${MONO}`;
+      ctx.fillText(String(hits).padStart(7, "0"), x + w * 0.14, y + h * 0.65);
+      if (color) ctx.globalAlpha = 1;
+    },
+    function cloud(ctx, x, y, w, h, loop, color) {
+      for (let i = 0; i < 4; i += 1) {
+        const rx = x + w * (0.44 + i * 0.14);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(rx, y + h * 0.24, w * 0.1, h * 0.5);
+        for (let k = 0; k < 4; k += 1) {
+          const on = Math.sin(loop * Math.PI * 6 + i + k) > 0;
+          ctx.fillStyle = on ? color : "rgba(111,195,255,0.2)";
+          ctx.fillRect(rx + 2, y + h * (0.3 + k * 0.1), 2, 2);
+        }
+      }
+      for (let i = 0; i < 4; i += 1) {
+        const t = (loop + i * 0.25) % 1;
+        const px = x + w * 0.16 + t * w * 0.3;
+        ctx.fillStyle = "#8ff0ff";
+        ctx.fillRect(px, y + h * 0.48 + Math.sin(t * 6 + i) * h * 0.06, Math.max(3, w * 0.04), 1.6);
+      }
+    },
+    function agent(ctx, x, y, w, h, loop, color) {
+      if (Math.floor(loop * 6) % 2 === 0) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x + w * 0.2, y + h * 0.22, 3.5, h * 0.22);
+        glowAt(ctx, x + w * 0.2, y + h * 0.33, h * 0.22, color, 0.4);
+      }
+      ctx.fillStyle = "rgba(200,170,255,0.7)";
+      for (let i = 0; i < 3; i += 1) {
+        const on = loop * 3.4 > i;
+        ctx.globalAlpha = on ? 1 : 0.16;
+        ctx.fillRect(x + w * 0.16, y + h * (0.56 + i * 0.12), w * (on ? 0.6 - i * 0.08 : 0.12), 2);
+      }
+      ctx.globalAlpha = 1;
+    },
+  ];
+
+  function sceneReveal(ctx, w, h, p, t, traveler) {
     const left = w * 0.05;
     const right = w * 0.95;
-    const y = h * 0.54;
-    const grow = easeOut(sub(0.02, 0.55, p));
-    const tapeH = 16;
-    const xAt = (index) => left + ((right - left) / (STATIONS.length - 1)) * index;
-    const appear = (index) => easeOut(sub(0.05 + index * 0.05, 0.28 + index * 0.05, p));
+    const gap = w * 0.014;
+    const fw = (right - left - gap * 5) / 6;
+    const fh = fw * 0.62;
+    const y = h * 0.4 - fh / 2;
+    const grow = easeOut(sub(0.02, 0.42, p));
 
-    // 纸带：贯穿全屏的一条，带齿孔
+    // 胶片带：托住六格
+    const stripH = 14;
+    const strip = ctx.createLinearGradient(left, 0, right, 0);
+    strip.addColorStop(0, "rgba(224,164,88,0.55)");
+    strip.addColorStop(0.5, "rgba(240,198,116,0.3)");
+    strip.addColorStop(1, "rgba(192,132,252,0.55)");
     ctx.save();
-    const tape = ctx.createLinearGradient(left, 0, right, 0);
-    tape.addColorStop(0, "rgba(224,164,88,0.5)");
-    tape.addColorStop(0.35, "rgba(108,255,158,0.36)");
-    tape.addColorStop(0.55, "rgba(240,198,116,0.42)");
-    tape.addColorStop(0.72, "rgba(0,229,255,0.4)");
-    tape.addColorStop(0.86, "rgba(111,195,255,0.42)");
-    tape.addColorStop(1, "rgba(192,132,252,0.5)");
-    ctx.globalAlpha = 0.9;
-    ctx.fillStyle = tape;
-    const tapeW = (right - left) * grow;
-    ctx.fillRect(left, y - tapeH / 2, tapeW, tapeH);
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = strip;
+    ctx.fillRect(left, y + fh - stripH / 2, (right - left) * grow, stripH);
     ctx.globalAlpha = 0.5;
-    ctx.fillStyle = "#05070b";
-    for (let x = left; x < left + tapeW; x += 16) {
-      circle(ctx, x + 8, y - tapeH / 2 + 3, 1.6, "#05070b");
-      circle(ctx, x + 8, y + tapeH / 2 - 3, 1.6, "#05070b");
+    for (let x = left; x < left + (right - left) * grow; x += 15) {
+      circle(ctx, x + 7, y + fh - stripH / 2 + 3, 1.5, "#05070b");
+      circle(ctx, x + 7, y + fh + stripH / 2 - 3, 1.5, "#05070b");
     }
     ctx.restore();
 
-    // 已走过的部分
-    ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.moveTo(xAt(0), y - tapeH / 2 - 1);
-    ctx.lineTo(xAt(0) + (xAt(5) - xAt(0)) * clamp01((p - 0.05) / 0.36), y - tapeH / 2 - 1);
-    ctx.stroke();
-
-    const s = Math.min(46, w * 0.052);
-    const top = y - tapeH / 2 - 46 - s * 0.5;
     STATIONS.forEach((station, index) => {
-      const a = appear(index);
+      const a = easeOut(sub(0.04 + index * 0.045, 0.26 + index * 0.045, p));
       if (a <= 0) return;
-      const x = xAt(index);
+      const x = left + index * (fw + gap);
+      const rise = (1 - a) * 18;
+
       ctx.save();
       ctx.globalAlpha = a;
+      ctx.translate(0, rise);
 
-      // 剪影
-      ctx.strokeStyle = station.color;
-      ctx.lineWidth = 1.5;
-      if (index === 0) {
-        roundRect(ctx, x - s * 0.55, top - s * 0.3, s * 1.1, s * 0.7, 2);
-        ctx.stroke();
-        for (let k = 0; k < 3; k += 1) circle(ctx, x - s * 0.3 + k * s * 0.3, top + s * 0.02, 2, station.color);
-      } else if (index === 1) {
-        for (let k = 0; k < 3; k += 1) {
-          roundRect(ctx, x - s * 0.5 + k * s * 0.36, top - s * 0.28, s * 0.2, s * 0.56, 4);
-          ctx.stroke();
-        }
-      } else if (index === 2) {
-        ctx.font = `700 ${Math.round(s * 0.6)}px ${MONO}`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = station.color;
-        ctx.fillText(">_", x, top);
-        ctx.textAlign = "left";
-      } else if (index === 3) {
-        roundRect(ctx, x - s * 0.5, top - s * 0.3, s, s * 0.6, 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x - s * 0.5, top - s * 0.16);
-        ctx.lineTo(x + s * 0.5, top - s * 0.16);
-        ctx.stroke();
-      } else if (index === 4) {
-        roundRect(ctx, x - s * 0.24, top - s * 0.36, s * 0.48, s * 0.72, 5);
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = station.color;
-        ctx.fillRect(x - 1.5, top - s * 0.34, 3, s * 0.68);
-      }
-
-      // 站点刻度
-      ctx.strokeStyle = station.color;
-      ctx.globalAlpha = a * 0.7;
+      ctx.fillStyle = "rgba(8,10,14,0.95)";
+      ctx.fillRect(x, y, fw, fh);
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(x, top + s * 0.42);
-      ctx.lineTo(x, y - tapeH / 2 - 4);
-      ctx.stroke();
+      ctx.rect(x, y, fw, fh);
+      ctx.clip();
+      const loop = (t * 0.5 + index * 0.17) % 1;
+      ctx.translate(x + 7, y + 7);
+      ctx.scale((fw - 14) / fw, (fh - 14) / fh);
+      MICRO[index](ctx, 0, 0, fw, fh, loop, station.color);
       ctx.restore();
 
-      ctx.save();
+      ctx.strokeStyle = station.color;
+      ctx.globalAlpha = a * 0.8;
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(x, y, fw, fh);
+      ctx.globalAlpha = a * 0.18;
+      const sheen = ctx.createLinearGradient(x, y, x + fw, y + fh);
+      sheen.addColorStop(0, "rgba(255,255,255,0.5)");
+      sheen.addColorStop(0.4, "rgba(255,255,255,0)");
+      ctx.fillStyle = sheen;
+      ctx.fillRect(x, y, fw, fh * 0.5);
+
+      ctx.globalAlpha = a * 0.55;
+      ctx.strokeStyle = station.color;
+      ctx.beginPath();
+      ctx.moveTo(x, y + fh + 22);
+      ctx.lineTo(x, y + fh + 12);
+      ctx.stroke();
       ctx.globalAlpha = a;
-      label(ctx, station.year, x, y + tapeH / 2 + 22, 12, station.color, "center", 1.6);
+      label(ctx, station.year, x, y + fh + 36, 12, station.color, "left", 1.6);
       ctx.restore();
     });
 
-    // 222 年的测量线
-    const measure = easeOut(sub(0.4, 0.62, p));
+    const measure = easeOut(sub(0.36, 0.58, p));
     if (measure > 0) {
-      const my = y - tapeH / 2 - 96;
+      const my = y - 40;
       ctx.save();
-      ctx.globalAlpha = measure * 0.7;
+      ctx.globalAlpha = measure * 0.65;
       ctx.strokeStyle = "rgba(255,255,255,0.3)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(xAt(0), my);
-      ctx.lineTo(xAt(0) + (xAt(5) - xAt(0)) * measure, my);
+      ctx.moveTo(left, my);
+      ctx.lineTo(left + (right - left) * measure, my);
       ctx.stroke();
-      [xAt(0), xAt(0) + (xAt(5) - xAt(0)) * measure].forEach((x) => {
-        ctx.beginPath();
-        ctx.moveTo(x, my - 5);
-        ctx.lineTo(x, my + 5);
-        ctx.stroke();
-      });
       ctx.restore();
-      label(ctx, "222 YEARS", w / 2, my - 18, 11, "rgba(255,255,255,0.55)", "center", 3.2);
+      label(ctx, "222 YEARS · 6 ERAS", w / 2, my - 16, 10, "rgba(255,255,255,0.55)", "center", 3);
     }
 
-    // 起点是孔，终点是光标
-    const holeAppear = easeOut(sub(0.08, 0.3, p));
-    if (holeAppear > 0) {
-      ctx.save();
-      ctx.globalAlpha = holeAppear;
-      glowAt(ctx, xAt(0), y, 40, "#e0a458", 0.45);
-      circle(ctx, xAt(0), y, 9, "rgba(12,9,6,0.95)");
-      ring(ctx, xAt(0), y, 9, "#e0a458", 1.8);
-      glowAt(ctx, xAt(5), y, 40, "#c084fc", 0.45);
-      circle(ctx, xAt(5), y, 9, "rgba(8,6,12,0.95)");
-      ring(ctx, xAt(5), y, 9, "#c084fc", 1.8);
-      const blink = Math.sin(p * 16) > -0.3 ? 1 : 0.2;
-      ctx.globalAlpha = holeAppear * blink;
-      ctx.fillStyle = "#c084fc";
-      ctx.fillRect(xAt(5) - 1.5, y - 5, 3, 10);
-      ctx.restore();
-    }
+    const titleP = easeOut(sub(0.3, 0.5, p));
+    const titleOut = 1 - sub(0.56, 0.66, p);
+    const cardP = easeOut(sub(0.58, 0.72, p));
 
-    // 标题
-    const titleP = easeOut(sub(0.5, 0.84, p));
-    if (titleP > 0) {
-      const size = Math.min(w * 0.055, 48);
+    if (titleP > 0 && titleOut > 0) {
+      const size = Math.min(w * 0.05, 44);
       ctx.save();
-      ctx.globalAlpha = titleP;
-      ctx.translate(w / 2, y + 150);
-      ctx.scale(mix(0.97, 1, titleP), mix(0.97, 1, titleP));
+      ctx.globalAlpha = titleP * titleOut;
       ctx.font = `800 ${size}px ${SANS}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.shadowColor = "rgba(143,240,255,0.25)";
-      ctx.shadowBlur = 14 * titleP;
       ctx.fillStyle = "#f6f9ff";
-      ctx.fillText("工具在变，Build 不变。", 0, 0);
+      ctx.shadowColor = "rgba(143,240,255,0.25)";
+      ctx.shadowBlur = 16;
+      ctx.fillText("工具在变，Build 不变。", w / 2, y + fh + 84 - (1 - titleP) * 10);
       ctx.restore();
-      label(ctx, "FROM PAPER TAPE TO PROMPT · 1804—2026", w / 2, y + 150 + size * 1.05, 10, "rgba(143,240,255,0.5)", "center", 3.4);
+    }
+
+    if (cardP > 0) {
+      const cy = y + fh + 116;
+      ctx.save();
+      ctx.globalAlpha = cardP;
+      const nameSize = Math.min(w * 0.052, 46);
+      ctx.font = `800 ${nameSize}px ${SANS}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#f8fbff";
+      ctx.shadowColor = "rgba(143,240,255,0.3)";
+      ctx.shadowBlur = 20;
+      ctx.fillText("代码时间机器", w / 2, cy);
+      ctx.shadowBlur = 0;
+
+      ctx.strokeStyle = "rgba(255,255,255,0.22)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(w / 2 - 90, cy + nameSize * 0.92);
+      ctx.lineTo(w / 2 + 90, cy + nameSize * 0.92);
+      ctx.stroke();
+
+      label(ctx, "CODE TIME MACHINE · TRAE 1024", w / 2, cy + nameSize * 1.34, 9, "rgba(255,255,255,0.45)", "center", 2.6);
+      label(ctx, traveler || "TRAE Builder", w / 2, cy + nameSize * 1.95, 13, "rgba(143,240,255,0.85)", "center", 2);
+      ctx.restore();
     }
   }
 
@@ -1021,38 +1094,65 @@
     return String(Math.round(value)).padStart(2, "0");
   }
 
-  function hud(ctx, w, h, beat, p, t) {
-    if (beat.key === "reveal" && p > 0.35) return;
-    const year = beat.year;
-    const size = Math.min(w * 0.075, 66);
+  function hud(ctx, w, h, beat, p, t, index) {
+    if (beat.key === "reveal") return;
+    const small = Math.min(w * 0.009, 12);
+    const yearSize = Math.min(w * 0.085, 84);
+
+    // 章节号
+    label(ctx, `${pad2(index + 1)} — 06`, w * 0.05, h * 0.108, small, "rgba(255,255,255,0.4)", "left", 3.2);
+
+    // 年份：黑体，不是等宽体
     ctx.save();
-    ctx.globalAlpha = 0.92;
-    ctx.font = `800 ${size}px ${MONO}`;
+    ctx.font = `800 ${yearSize}px ${SANS}`;
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.fillText(String(year), w * 0.05, h * 0.15);
+    ctx.fillStyle = "rgba(255,255,255,0.94)";
+    ctx.shadowColor = "rgba(255,255,255,0.16)";
+    ctx.shadowBlur = 22;
+    ctx.fillText(String(beat.year), w * 0.05 - 3, h * 0.108 + yearSize * 0.92);
     ctx.restore();
 
-    label(ctx, beat.tag, w * 0.05, h * 0.15 + 26, 10, "rgba(255,255,255,0.5)", "left", 2.4);
-
+    // 年份下方的细线 + 时代标签
+    const lineY = h * 0.108 + yearSize * 1.12;
     ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(w * 0.05, h * 0.15 + 44);
-    ctx.lineTo(w * 0.05 + 96, h * 0.15 + 44);
+    ctx.moveTo(w * 0.05, lineY);
+    ctx.lineTo(w * 0.05 + yearSize * 2.1, lineY);
     ctx.stroke();
     ctx.restore();
-    label(ctx, beat.readout, w * 0.95, h * 0.15, 9, "rgba(255,255,255,0.42)", "right", 1.8);
 
-    // 时间轴标尺
+    ctx.save();
+    ctx.font = `600 ${Math.min(w * 0.011, 14)}px ${SANS}`;
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.textBaseline = "middle";
+    ctx.letterSpacing = "1.6px";
+    ctx.fillText(beat.tag, w * 0.05, lineY + 20);
+    ctx.letterSpacing = "0px";
+    ctx.restore();
+
+    // 右上角：读数方块
+    const boxW = Math.min(w * 0.2, 250);
+    const boxX = w * 0.95 - boxW;
+    const boxY = h * 0.108;
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(boxX, boxY, boxW, 34);
+    ctx.restore();
+    label(ctx, "READOUT", boxX + 10, boxY + 12, 7, "rgba(255,255,255,0.4)", "left", 2.4);
+    label(ctx, beat.readout, boxX + 10, boxY + 25, Math.min(w * 0.0085, 11), "rgba(255,255,255,0.75)", "left", 1.2);
+
+    // 底部时间标尺
     const left = w * 0.05;
     const right = w * 0.95;
     const y = h - 104;
     ctx.save();
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.45;
     ctx.strokeStyle = "rgba(255,255,255,0.22)";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1088,7 +1188,7 @@
     const sceneCtx = scene.getContext("2d");
     const bloom = document.createElement("canvas");
     const bloomCtx = bloom.getContext("2d");
-    const noise = makeNoise(160);
+    const noise = [makeNoise(160), makeNoise(160), makeNoise(160)];
     const canBlur = typeof bloomCtx.filter === "string";
 
     return {
@@ -1099,6 +1199,8 @@
       bloom,
       bloomCtx,
       noise,
+      dof: null,
+      dofCtx: null,
       canBlur,
       resize(width, height) {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1114,7 +1216,7 @@
     };
   }
 
-  function drawScene(engine, w, h, t, prompt) {
+  function drawScene(engine, w, h, t, prompt, traveler) {
     const { sceneCtx } = engine;
     sceneCtx.setTransform(engine.canvas.width / w, 0, 0, engine.canvas.height / h, 0, 0);
     sceneCtx.clearRect(0, 0, w, h);
@@ -1161,17 +1263,17 @@
       ring(sceneCtx, hole.x, hole.y, 15 + Math.sin(t * 60) * 1.6, pal.line, 1);
       sceneCtx.restore();
     } else {
-      sceneReveal(sceneCtx, w, h, p, pal, hole);
+      sceneReveal(sceneCtx, w, h, p, t, traveler);
     }
 
     dust(sceneCtx, w, h, t * 6, pal.ink);
     scanlines(sceneCtx, w, h, index === 2 ? 0.2 : 0.06, 3);
-    hud(sceneCtx, w, h, beat, p, t);
+    hud(sceneCtx, w, h, beat, p, t, index);
     return { beat, p, index };
   }
 
-  function composite(engine, w, h, t) {
-    const { ctx, scene, bloom, bloomCtx, noise } = engine;
+  function composite(engine, w, h, t, pal) {
+    const { ctx, scene, bloom, bloomCtx } = engine;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, engine.canvas.width, engine.canvas.height);
@@ -1180,21 +1282,77 @@
     ctx.globalCompositeOperation = "source-over";
     ctx.drawImage(scene, 0, 0, engine.canvas.width, engine.canvas.height, 0, 0, w, h);
 
+    // 边缘虚化：远景/边缘进模糊层，中心保持锐利，模拟浅景深
+    if (!engine.dof) {
+      engine.dof = document.createElement("canvas");
+      engine.dofCtx = engine.dof.getContext("2d");
+    }
+    if (engine.dof.width !== engine.canvas.width) {
+      engine.dof.width = engine.canvas.width;
+      engine.dof.height = engine.canvas.height;
+    }
+    const dofCtx = engine.dofCtx;
+    dofCtx.setTransform(1, 0, 0, 1, 0, 0);
+    dofCtx.clearRect(0, 0, engine.dof.width, engine.dof.height);
+    dofCtx.save();
+    if (engine.canBlur) dofCtx.filter = "blur(9px)";
+    dofCtx.drawImage(scene, 0, 0);
+    dofCtx.restore();
+    dofCtx.globalCompositeOperation = "destination-in";
+    const mask = dofCtx.createRadialGradient(
+      engine.dof.width / 2,
+      engine.dof.height * 0.52,
+      Math.min(engine.dof.width, engine.dof.height) * 0.36,
+      engine.dof.width / 2,
+      engine.dof.height * 0.52,
+      Math.min(engine.dof.width, engine.dof.height) * 0.78
+    );
+    mask.addColorStop(0, "rgba(0,0,0,0)");
+    mask.addColorStop(0.6, "rgba(0,0,0,0.25)");
+    mask.addColorStop(1, "rgba(0,0,0,0.72)");
+    dofCtx.fillStyle = mask;
+    dofCtx.fillRect(0, 0, engine.dof.width, engine.dof.height);
+    dofCtx.globalCompositeOperation = "source-over";
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(engine.dof, 0, 0);
+    ctx.setTransform(engine.canvas.width / w, 0, 0, engine.canvas.height / h, 0, 0);
+
+    // bloom
     bloomCtx.clearRect(0, 0, bloom.width, bloom.height);
     bloomCtx.save();
     if (engine.canBlur) bloomCtx.filter = "blur(7px) brightness(1.22)";
     bloomCtx.drawImage(scene, 0, 0, scene.width, scene.height, 0, 0, bloom.width, bloom.height);
     bloomCtx.restore();
-
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha = 0.3;
     ctx.drawImage(bloom, 0, 0, bloom.width, bloom.height, 0, 0, w, h);
     ctx.globalAlpha = 0.12;
     ctx.drawImage(bloom, 0, 0, bloom.width, bloom.height, -w * 0.003, -h * 0.003, w * 1.006, h * 1.006);
 
+    // 逐镜调色：暗部偏冷、亮部偏该时代的主色
+    if (pal) {
+      ctx.globalCompositeOperation = "multiply";
+      ctx.globalAlpha = 1;
+      const cold = ctx.createLinearGradient(0, h, 0, 0);
+      cold.addColorStop(0, "rgba(104,126,150,0.26)");
+      cold.addColorStop(0.55, "rgba(190,200,215,0.08)");
+      cold.addColorStop(1, "rgba(255,255,255,0.02)");
+      ctx.fillStyle = cold;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.globalCompositeOperation = "screen";
+      const warm = ctx.createRadialGradient(w * 0.52, h * 0.42, 0, w * 0.52, h * 0.42, Math.max(w, h) * 0.72);
+      warm.addColorStop(0, `rgba(${rgbOf(pal.ink)},0.1)`);
+      warm.addColorStop(1, `rgba(${rgbOf(pal.ink)},0)`);
+      ctx.fillStyle = warm;
+      ctx.fillRect(0, 0, w, h);
+    }
+
     ctx.globalCompositeOperation = "source-over";
     ctx.globalAlpha = 1;
-    grain(ctx, w, h, noise, 0.085);
+    const tile = engine.noise[Math.floor(performance.now() / 70) % engine.noise.length];
+    grain(ctx, w, h, tile, 0.09);
+
     const topScrim = ctx.createLinearGradient(0, 0, 0, h * 0.24);
     topScrim.addColorStop(0, "rgba(0,0,0,0.62)");
     topScrim.addColorStop(1, "rgba(0,0,0,0)");
@@ -1207,7 +1365,7 @@
     ctx.fillRect(0, h * 0.8, w, h * 0.2);
     vignette(ctx, w, h, 0.6);
 
-    // 段间闪白：一到两帧，硬切就有了力道
+    // 段间闪白
     let nearest = 1;
     BEATS.forEach((beat) => {
       nearest = Math.min(nearest, Math.abs(t - beat.to));
@@ -1219,8 +1377,11 @@
     }
 
     // 黑场：只剩一个孔
-    if (t > BLACK_AT && t < REVEAL_AT && t > 0) {
-      const dip = t < (BLACK_AT + REVEAL_AT) / 2 ? sub(BLACK_AT, (BLACK_AT + REVEAL_AT) / 2, t) : 1 - sub((BLACK_AT + REVEAL_AT) / 2, REVEAL_AT, t);
+    if (t > BLACK_AT && t < REVEAL_AT) {
+      const dip =
+        t < (BLACK_AT + REVEAL_AT) / 2
+          ? sub(BLACK_AT, (BLACK_AT + REVEAL_AT) / 2, t)
+          : 1 - sub((BLACK_AT + REVEAL_AT) / 2, REVEAL_AT, t);
       ctx.fillStyle = `rgba(0,0,0,${dip * 0.97})`;
       ctx.fillRect(0, 0, w, h);
       const beat = 1 + Math.sin(t * 160) * 0.06;
@@ -1228,12 +1389,12 @@
       const cy = h / 2;
       circle(ctx, cx, cy, 10 * beat, "rgba(0,0,0,1)");
       ring(ctx, cx, cy, 10 * beat, `rgba(255,255,255,${0.5 * dip})`, 1.2);
-      glowAt(ctx, cx, cy, 70, `rgba(143,240,255,${0.22 * dip})`, 0.5);
+      glowAt(ctx, cx, cy, 70, "#8ff0ff", 0.22 * dip);
     }
     ctx.restore();
   }
 
-  function play(prompt) {
+  function play(prompt, traveler) {
     return new Promise((resolve) => {
       const canvas = document.getElementById("finale-canvas");
       const caption = document.getElementById("finale-caption");
@@ -1287,8 +1448,8 @@
       const onResize = () => {
         size();
         if (reduced) {
-          const built = drawScene(engine, width, height, 1, prompt);
-          composite(engine, width, height, 1);
+          const built = drawScene(engine, width, height, 1, prompt, traveler);
+          composite(engine, width, height, 1, built.beat.pal);
           caption.textContent = built.beat.caption;
         }
       };
@@ -1300,8 +1461,8 @@
       if (CTM.audio && CTM.audio.finaleStart) CTM.audio.finaleStart(DURATION / 1000, BLACK_AT * DURATION);
 
       if (reduced) {
-        const built = drawScene(engine, width, height, 1, prompt);
-        composite(engine, width, height, 1);
+        const built = drawScene(engine, width, height, 1, prompt, traveler);
+        composite(engine, width, height, 1, built.beat.pal);
         caption.textContent = built.beat.caption;
         window.setTimeout(finish, 1800);
         return;
@@ -1310,8 +1471,8 @@
       const frame = (now) => {
         if (done) return;
         const t = clamp01((now - startedAt) / DURATION);
-        const built = drawScene(engine, width, height, t, prompt);
-        composite(engine, width, height, t);
+        const built = drawScene(engine, width, height, t, prompt, traveler);
+        composite(engine, width, height, t, built.beat.pal);
 
         if (!heartbeatDone && t >= BLACK_AT) {
           heartbeatDone = true;
