@@ -9610,6 +9610,11 @@ body.is-finale #main {
       sceneCtx.rotate((rot * Math.PI) / 180);
       sceneCtx.scale(zoom, zoom);
       sceneCtx.translate(-w / 2, -h / 2);
+      // 每段前 0.12：一次轻微的推入，让硬切有“落地”
+      const entry = easeOut(clamp01(p / 0.12));
+      sceneCtx.translate(w / 2, h / 2);
+      sceneCtx.scale(mix(1.03, 1, entry), mix(1.03, 1, entry));
+      sceneCtx.translate(-w / 2, -h / 2);
       if (index === 5) scenes[index](sceneCtx, w, h, p, pal, hole, prompt);
       else scenes[index](sceneCtx, w, h, p, pal, hole);
       sceneCtx.restore();
