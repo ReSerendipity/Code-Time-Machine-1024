@@ -137,6 +137,112 @@
       audio.tone(760, 0.05, "square", 0.05, 0.06);
     },
 
+    /* ---- 结尾动画的音景：一条贯穿全片的 riser + 每个时代的声音标记 ---- */
+    finaleStart(duration) {
+      if (!audio.enabled) return;
+      if (!ctx) audio.init();
+      if (!ctx || !master || !noiseBuffer) return;
+      audio.finaleStop();
+      const start = ctx.currentTime;
+      try {
+        const source = ctx.createBufferSource();
+        source.buffer = noiseBuffer;
+        source.loop = true;
+        const band = ctx.createBiquadFilter();
+        band.type = "bandpass";
+        band.Q.value = 1.2;
+        band.frequency.setValueAtTime(170, start);
+        band.frequency.exponentialRampToValueAtTime(2800, start + duration * 0.94);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.045, start + duration * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.085, start + duration * 0.9);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration * 0.97);
+        source.connect(band);
+        band.connect(gain);
+        gain.connect(master);
+        source.start(start);
+        source.stop(start + duration);
+
+        const sub = ctx.createOscillator();
+        sub.type = "sine";
+        sub.frequency.setValueAtTime(37, start);
+        sub.frequency.linearRampToValueAtTime(56, start + duration * 0.9);
+        const subGain = ctx.createGain();
+        subGain.gain.setValueAtTime(0.0001, start);
+        subGain.gain.exponentialRampToValueAtTime(0.055, start + duration * 0.85);
+        subGain.gain.exponentialRampToValueAtTime(0.0001, start + duration * 0.96);
+        sub.connect(subGain);
+        subGain.connect(master);
+        sub.start(start);
+        sub.stop(start + duration);
+
+        audio.finaleNodes = [source, sub];
+      } catch (error) {
+        audio.finaleNodes = [];
+      }
+    },
+
+    finaleStop() {
+      (audio.finaleNodes || []).forEach((node) => {
+        try {
+          node.stop();
+        } catch (error) {
+          /* already stopped */
+        }
+      });
+      audio.finaleNodes = [];
+    },
+
+    heartbeat() {
+      audio.tone(58, 0.18, "sine", 0.22);
+      audio.tone(46, 0.24, "sine", 0.16, 0.24);
+    },
+
+    impact() {
+      audio.noise(0.7, 0.2, 0, 1400, "lowpass", 110);
+      audio.tone(44, 1.2, "sine", 0.22);
+      audio.tone(880, 0.6, "triangle", 0.045, 0.02);
+      audio.tone(1320, 0.5, "sine", 0.03, 0.06);
+    },
+
+    sceneHit(name) {
+      if (!audio.enabled) return;
+      switch (name) {
+        case "paperRustle":
+          audio.noise(0.55, 0.05, 0, 1800, "bandpass", 900);
+          audio.noise(0.35, 0.035, 0.2, 3400, "highpass");
+          audio.tone(70, 0.35, "triangle", 0.05);
+          break;
+        case "copperHum":
+          audio.tone(118, 1.2, "sawtooth", 0.03);
+          audio.tone(59, 1.4, "sine", 0.05);
+          audio.relay();
+          break;
+        case "phosphor":
+          audio.teletype();
+          audio.noise(0.9, 0.018, 0.1, 5200, "highpass");
+          break;
+        case "datastream":
+          audio.modem();
+          audio.noise(0.6, 0.025, 0.25, 2400, "bandpass", 5400);
+          break;
+        case "fanArray":
+          audio.fan();
+          audio.noise(1.1, 0.03, 0, 380, "lowpass");
+          break;
+        case "aiShimmer":
+          audio.generate();
+          audio.tone(880, 0.55, "sine", 0.028, 0.05, 1320);
+          break;
+        case "impact":
+          audio.impact();
+          break;
+        default:
+          break;
+      }
+    },
+
     /* 1804 打孔卡：机械打孔 + 织机 */
     punch() {
       audio.noise(0.05, 0.22, 0, 2600, "highpass");

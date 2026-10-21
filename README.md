@@ -34,16 +34,21 @@ TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
 
 ### 结尾动画 · 一个孔贯穿 222 年
 
-| 1804 纸带 | 1972 电传字符 |
+24 秒，一镜到底。同一个孔钉在画面同一位置，它周围的材质被换掉：纸 → 铜触点 → 磷光字符 → 像素 → 数据包 → 光标。
+有 bloom、胶片颗粒、暗角和真实的运镜；每段右侧有一行该时代的读数，底部是一条 1804→2026 的时间标尺。
+声音是一整条低频 riser，17 秒处全黑、只剩一个孔和一声心跳，然后拉远揭示整条时间线。
+
+| 1804 · 打孔与背光 | 1945 · 继电器吸合 |
 | --- | --- |
-| ![纸带](screenshots/30-finale-tape.png) | ![字符](screenshots/31-finale-teletype.png) |
-| ![胶片带](screenshots/32-finale-strip.png) | |
+| ![纸带](screenshots/30-finale-tape.png) | ![继电器](screenshots/31-finale-relay.png) |
+| ![1991](screenshots/32-finale-web.png) | ![2007](screenshots/33-finale-cloud.png) |
+| ![2026](screenshots/34-finale-agent.png) | ![时间线](screenshots/35-finale-reveal.png) |
 
 ### Agent 接管
 
 | 超时后 AI 逐关接手 | 档案如实标注 |
 | --- | --- |
-| ![接管中](screenshots/33-agent-takeover.png) | ![接管后的档案](screenshots/34-archive-after-takeover.png) |
+| ![接管中](screenshots/36-agent-takeover.png) | ![接管后的档案](screenshots/37-archive-after-takeover.png) |
 
 | 可下载海报 | 手机端 |
 | --- | --- |
