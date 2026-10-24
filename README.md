@@ -1,10 +1,14 @@
 # 代码时间机器 · The Code Time Machine
 
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+
 > 从打孔纸带到 AI 编程，六次回到 Build 的现场。
 
 **Live Demo:** https://reserendipity.github.io/Code-Time-Machine-1024/
 
 TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
+
+**English summary:** A playable time machine that walks you through six eras of building software — from 1804 punch cards to 2026 AI pair programming — each as a small interactive puzzle. If the 1024-second timer runs out, an agent takes over the remaining stations and your archive honestly records which ones it built for you.
 
 ## 这是什么
 
