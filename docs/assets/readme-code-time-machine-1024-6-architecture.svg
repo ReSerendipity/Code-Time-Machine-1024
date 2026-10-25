@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" font-family="'SF Mono','Cascadia Code',Menlo,Consolas,monospace">
+  <rect width="1200" height="680" fill="#07090c"/>
+  <text x="600" y="38" text-anchor="middle" fill="#8ff0ff" font-size="20" letter-spacing="2">CODE TIME MACHINE · ARCHITECTURE / DATA FLOW</text>
+  <text x="600" y="62" text-anchor="middle" fill="#8a93a3" font-size="13">single page · no framework · no runtime deps · offline capable</text>
+
+  <!-- Entry layer -->
+  <g>
+    <rect x="40" y="100" width="260" height="90" rx="10" fill="#0d1420" stroke="#8ff0ff" stroke-width="1.5"/>
+    <text x="170" y="128" text-anchor="middle" fill="#e6edf3" font-size="15">Browser Entry</text>
+    <text x="170" y="150" text-anchor="middle" fill="#8a93a3" font-size="12">index.html (dev)</text>
+    <text x="170" y="168" text-anchor="middle" fill="#8a93a3" font-size="12">docs/index.html (Pages)</text>
+  </g>
+
+  <!-- Core state machine -->
+  <g>
+    <rect x="360" y="100" width="280" height="90" rx="10" fill="#0d1420" stroke="#f0b870" stroke-width="1.5"/>
+    <text x="500" y="128" text-anchor="middle" fill="#e6edf3" font-size="15">core.js · main.js</text>
+    <text x="500" y="150" text-anchor="middle" fill="#8a93a3" font-size="12">view router · 1024s countdown</text>
+    <text x="500" y="168" text-anchor="middle" fill="#8a93a3" font-size="12">stamp / progress / timer</text>
+  </g>
+
+  <!-- Six eras -->
+  <g>
+    <rect x="700" y="92" width="460" height="106" rx="10" fill="#0d1420" stroke="#3a4658" stroke-width="1.5"/>
+    <text x="930" y="116" text-anchor="middle" fill="#e6edf3" font-size="14">six era rooms (pure DOM interactions)</text>
+    <g font-size="12" fill="#c9d4e3">
+      <rect x="716" y="128" width="68" height="26" rx="5" fill="#131c2b" stroke="#6b5a3e"/><text x="750" y="146" text-anchor="middle">1804</text>
+      <rect x="792" y="128" width="68" height="26" rx="5" fill="#131c2b" stroke="#3e5a4a"/><text x="826" y="146" text-anchor="middle">1945</text>
+      <rect x="868" y="128" width="68" height="26" rx="5" fill="#131c2b" stroke="#3e4a6b"/><text x="902" y="146" text-anchor="middle">1972</text>
+      <rect x="944" y="128" width="68" height="26" rx="5" fill="#131c2b" stroke="#6b3e4a"/><text x="978" y="146" text-anchor="middle">1991</text>
+      <rect x="1020" y="128" width="68" height="26" rx="5" fill="#131c2b" stroke="#4a3e6b"/><text x="1054" y="146" text-anchor="middle">2007</text>
+      <rect x="1096" y="128" width="52" height="26" rx="5" fill="#1a1430" stroke="#9a6bff"/><text x="1122" y="146" text-anchor="middle">2026</text>
+      <text x="750" y="178" text-anchor="middle" fill="#8a93a3">punch</text>
+      <text x="826" y="178" text-anchor="middle" fill="#8a93a3">reg</text>
+      <text x="902" y="178" text-anchor="middle" fill="#8a93a3">unix</text>
+      <text x="978" y="178" text-anchor="middle" fill="#8a93a3">web</text>
+      <text x="1054" y="178" text-anchor="middle" fill="#8a93a3">cloud</text>
+      <text x="1122" y="178" text-anchor="middle" fill="#8a93a3">ai</text>
+    </g>
+  </g>
+
+  <!-- vertical line from core down -->
+  <line x1="500" y1="190" x2="500" y2="240" stroke="#3a4658" stroke-width="2"/>
+  <line x1="170" y1="190" x2="170" y2="215" stroke="#3a4658" stroke-width="2"/>
+  <line x1="170" y1="215" x2="500" y2="215" stroke="#3a4658" stroke-width="2"/>
+  <line x1="500" y1="190" x2="930" y2="190" stroke="#3a4658" stroke-width="2"/>
+  <line x1="930" y1="190" x2="930" y2="200" stroke="#3a4658" stroke-width="2"/>
+
+  <!-- Subsystems row -->
+  <g>
+    <rect x="120" y="250" width="220" height="92" rx="10" fill="#0d1420" stroke="#3a4658"/>
+    <text x="230" y="278" text-anchor="middle" fill="#e6edf3" font-size="14">agent.js</text>
+    <text x="230" y="300" text-anchor="middle" fill="#8a93a3" font-size="12">on timeout · solves</text>
+    <text x="230" y="318" text-anchor="middle" fill="#8a93a3" font-size="12">remaining rooms, logs it</text>
+  </g>
+  <g>
+    <rect x="400" y="250" width="220" height="92" rx="10" fill="#0d1420" stroke="#3a4658"/>
+    <text x="510" y="278" text-anchor="middle" fill="#e6edf3" font-size="14">audio.js</text>
+    <text x="510" y="300" text-anchor="middle" fill="#8a93a3" font-size="12">Web Audio oscillators</text>
+    <text x="510" y="318" text-anchor="middle" fill="#8a93a3" font-size="12">+ noise buffer, 6 era SFX</text>
+  </g>
+  <g>
+    <rect x="680" y="250" width="220" height="92" rx="10" fill="#0d1420" stroke="#3a4658"/>
+    <text x="790" y="278" text-anchor="middle" fill="#e6edf3" font-size="14">finale.js</text>
+    <text x="790" y="300" text-anchor="middle" fill="#8a93a3" font-size="12">Canvas 2D 24s one-take</text>
+    <text x="790" y="318" text-anchor="middle" fill="#8a93a3" font-size="12">same hole 1804→2026</text>
+  </g>
+  <g>
+    <rect x="960" y="250" width="200" height="92" rx="10" fill="#0d1420" stroke="#3a4658"/>
+    <text x="1060" y="278" text-anchor="middle" fill="#e6edf3" font-size="14">result.js</text>
+    <text x="1060" y="300" text-anchor="middle" fill="#8a93a3" font-size="12">radar · archive</text>
+    <text x="1060" y="318" text-anchor="middle" fill="#8a93a3" font-size="12">1080×1440 poster</text>
+  </g>
+
+  <!-- arrows from core to subsystems -->
+  <line x1="500" y1="240" x2="230" y2="250" stroke="#3a4658" stroke-width="1.5"/>
+  <line x1="500" y1="240" x2="510" y2="250" stroke="#3a4658" stroke-width="1.5"/>
+  <line x1="500" y1="240" x2="790" y2="250" stroke="#3a4658" stroke-width="1.5"/>
+  <line x1="500" y1="240" x2="1060" y2="250" stroke="#3a4658" stroke-width="1.5"/>
+
+  <!-- Persistence layer -->
+  <g>
+    <rect x="200" y="410" width="360" height="90" rx="10" fill="#101a2a" stroke="#8ff0ff" stroke-width="1.2"/>
+    <text x="380" y="438" text-anchor="middle" fill="#e6edf3" font-size="14">localStorage</text>
+    <text x="380" y="460" text-anchor="middle" fill="#8a93a3" font-size="12">nickname · progress · deadline</text>
+    <text x="380" y="478" text-anchor="middle" fill="#8a93a3" font-size="12">takeover records (nothing leaves device)</text>
+  </g>
+  <g>
+    <rect x="640" y="410" width="360" height="90" rx="10" fill="#101a2a" stroke="#f0b870" stroke-width="1.2"/>
+    <text x="820" y="438" text-anchor="middle" fill="#e6edf3" font-size="14">URL hash</text>
+    <text x="820" y="460" text-anchor="middle" fill="#8a93a3" font-size="12">shareable result link</text>
+    <text x="820" y="478" text-anchor="middle" fill="#8a93a3" font-size="12">includes agent-takeover markers</text>
+  </g>
+  <line x1="380" y1="342" x2="380" y2="410" stroke="#3a4658" stroke-width="1.5"/>
+  <line x1="820" y1="342" x2="820" y2="410" stroke="#3a4658" stroke-width="1.5"/>
+
+  <!-- Bottom note -->
+  <rect x="200" y="550" width="800" height="90" rx="10" fill="#0a1018" stroke="#2a3444"/>
+  <text x="600" y="578" text-anchor="middle" fill="#8ff0ff" font-size="14">zero external requests · no fonts / images / audio / CDN</text>
+  <text x="600" y="602" text-anchor="middle" fill="#8a93a3" font-size="12">2026 "AI" station is a local template mock — no LLM, no API key, no network</text>
+  <text x="600" y="622" text-anchor="middle" fill="#8a93a3" font-size="12">build.js inlines CSS + JS into one html for GitHub Pages under docs/</text>
+</svg>
