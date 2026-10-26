@@ -39,7 +39,7 @@ TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
 
 ![首页](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-1-landing.png)
 
-**1804 · 里昂 Jacquard 工坊**——用 5 位二进制打出代号首字母：
+**1804 · 里昂 Jacquard 工坊**——选好代号字母、打下第一个孔位后的状态：
 
 ![1804 打孔卡房间](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-3-era1-punch.png)
 
@@ -47,11 +47,11 @@ TRAE 社区 1024 狂欢周 · 玩法二「TRAE 1024 作品秀」参赛作品。
 
 ![2026 AI 房间](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-4-era6-ai.png)
 
-**结尾时间线 · 222 年、六枚印章、同一个孔：**
+**通关档案 · Builder 类型、四维雷达与可下载海报：**
 
-![结尾时间线](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-5-finale-timeline.png)
+![通关档案](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-5-finale-timeline.png)
 
-**移动端 · 390px 宽度下的首页与启动按钮：**
+**移动端 · 375px 宽度下的首页与启动按钮：**
 
 ![移动端首页](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-2-mobile.png)
 
@@ -186,7 +186,7 @@ You have **1024 seconds** from the moment you press *Start*. When time runs out,
 
 ![Landing](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-1-landing.png)
 
-**1804 · Jacquard workshop, Lyon** — punch your callsign's first letter in 5-bit binary:
+**1804 · Jacquard workshop, Lyon** — after picking your callsign letter and punching the first hole:
 
 ![1804 punch card room](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-3-era1-punch.png)
 
@@ -194,11 +194,11 @@ You have **1024 seconds** from the moment you press *Start*. When time runs out,
 
 ![2026 AI room](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-4-era6-ai.png)
 
-**Ending timeline · 222 years, six stamps, one and the same hole:**
+**Completion archive · Builder type, four-dimension radar and downloadable poster:**
 
-![Finale timeline](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-5-finale-timeline.png)
+![Completion archive](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-5-finale-timeline.png)
 
-**Mobile · landing and start button at 390px width:**
+**Mobile · landing and start button at 375px width:**
 
 ![Mobile landing](https://gcore.jsdelivr.net/gh/ReSerendipity/Code-Time-Machine-1024@main/docs/assets/readme-code-time-machine-1024-2-mobile.png)
 
