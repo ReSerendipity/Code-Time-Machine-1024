@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    name: JS 语法完整性（零构建前端）
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # 仓库是零构建的原生 JS 前端（无 package.json / 无打包依赖），
+      # 语法错误只会在浏览器运行时暴露，故在 push/PR 上先做静态检查。
+      # 覆盖 js/ 下全部第一方脚本与构建脚本 build.js 本身。
+      - name: node --check on first-party JS
+        run: |
+          set -e
+          files=$(ls js/*.js build.js)
+          echo "$files" | wc -l
+          for f in $files; do
+            node --check "$f"
+            echo "OK  $f"
+          done
+
+      # build.js 把 CSS / JS 内联进单文件版 code-time-machine.html；
+      # 该产物在 .gitignore 中（仅本地构建用），CI 只验证可构建，不提交。
+      - name: build.js 冒烟（单文件版可构建，产物不入库）
+        run: |
+          node build.js
+          test -s code-time-machine.html && echo BUILD_OK
+
+      - name: smoke (static server + HTTP 200)
+        run: |
+          python3 -m http.server 4173 >/dev/null 2>&1 & SRV=$!
+          sleep 1
+          curl -sf http://127.0.0.1:4173/index.html >/dev/null && echo SMOKE_OK || { kill $SRV; exit 1; }
+          kill $SRV
