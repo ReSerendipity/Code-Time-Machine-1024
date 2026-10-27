@@ -5,6 +5,7 @@
 ![Last commit](https://img.shields.io/github/last-commit/ReSerendipity/Code-Time-Machine-1024)
 ![GitHub Pages](https://img.shields.io/badge/Pages-live-8ff0ff)
 ![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+[![Governance](https://img.shields.io/badge/governance-ReSerendipity%2F.github-blue)](https://github.com/ReSerendipity/.github/tree/main/governance)
 
 > 从打孔纸带到 AI 编程，六次回到 Build 的现场。 / From punch cards to AI pair programming: six stops back at the Build bench.
 
