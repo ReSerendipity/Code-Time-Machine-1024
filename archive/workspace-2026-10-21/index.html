@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07090c">
+  <meta name="description" content="代码时间机器：从打孔纸带到 AI 编程，用 6 个时代回答 Build 是什么。TRAE 1024 作品秀。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23070b10'/%3E%3Ctext x='32' y='41' font-size='20' font-family='monospace' fill='%238ff0ff' text-anchor='middle'%3E1024%3C/text%3E%3C/svg%3E">
+  <title>代码时间机器 · 1024 Builder 作品秀</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-era="landing">
+  <div id="app">
+    <header id="topbar" class="topbar">
+      <button id="brand" class="brand" type="button" aria-label="返回代码时间机器首页">
+        <span class="brand-mark" aria-hidden="true">
+          <span>10</span><span>24</span>
+        </span>
+        <span class="brand-text">
+          <strong>TIME MACHINE</strong>
+          <small>代码时间机器</small>
+        </span>
+      </button>
+
+      <div id="top-progress" class="top-progress" hidden aria-live="polite"></div>
+
+      <div id="countdown" class="countdown" hidden role="timer" aria-label="本机剩余时间">
+        <span class="cd-label">TIME LEFT</span>
+        <span class="cd-value" id="countdown-value">17:04</span>
+      </div>
+
+      <div class="top-actions">
+        <button id="sound-toggle" class="icon-btn sound-btn" type="button" aria-pressed="false" aria-label="切换音效">
+          <span class="sound-dot" aria-hidden="true"></span>
+          <span class="sound-label">声音：关</span>
+        </button>
+        <button id="help-open" class="icon-btn help-btn" type="button" aria-label="查看玩法与说明">?</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="screen-landing" class="screen is-active" aria-labelledby="landing-title">
+        <canvas id="landing-canvas" aria-hidden="true"></canvas>
+        <div class="landing-inner">
+          <div class="hero-kicker">TRAE 1024 · 玩法二作品秀</div>
+          <h1 id="landing-title" class="hero-title">代码<span>时间</span>机器</h1>
+          <p class="hero-sub">从打孔纸带到 AI 编程，六次回到 Build 的现场。</p>
+
+          <div class="console">
+            <div class="console-bar">
+              <span class="console-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="console-title">1024://time-machine</span>
+              <span class="console-status" id="console-status" aria-live="polite">READY</span>
+            </div>
+            <div id="boot-log" class="boot-log" aria-live="polite"></div>
+            <form id="start-form" class="start-form" autocomplete="off">
+              <label for="traveler">旅行者代号 <span>可留空，默认“TRAE Builder”</span></label>
+              <div class="start-row">
+                <input id="traveler" name="traveler" maxlength="16" placeholder="TRAE Builder" aria-label="旅行者代号">
+                <button id="start-btn" class="btn btn-primary" type="submit">
+                  启动时间机器 <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </form>
+            <div id="continue-wrap" class="continue-wrap" hidden>
+              <button id="continue-btn" class="btn btn-ghost" type="button">继续上次旅行</button>
+              <span id="continue-meta" class="continue-meta"></span>
+              <button id="restart-btn" class="btn btn-quiet" type="button">重新开始</button>
+            </div>
+            <div class="console-foot">
+              <span>6 个时代 · 1024 秒内通关 · 无需登录</span>
+              <button id="sound-toggle-2" class="linkish" type="button" aria-pressed="false">声音：关</button>
+            </div>
+          </div>
+
+          <div class="era-teaser" aria-label="六个时代">
+            <span class="teaser-chip"><b>1804</b>打孔卡</span>
+            <span class="teaser-chip"><b>1945</b>寄存器</span>
+            <span class="teaser-chip"><b>1972</b>Unix / C</span>
+            <span class="teaser-chip"><b>1991</b>Web</span>
+            <span class="teaser-chip"><b>2007</b>移动 / 云</span>
+            <span class="teaser-chip"><b>2026</b>AI</span>
+          </div>
+
+          <p class="landing-hint">在任意页面输入 <kbd>1024</kbd> 试试。</p>
+        </div>
+      </section>
+
+      <section id="screen-era" class="screen" aria-labelledby="era-title">
+        <div id="era-root"></div>
+      </section>
+
+      <section id="screen-finale" class="screen" aria-label="从纸带到光标">
+        <canvas id="finale-canvas" aria-hidden="true"></canvas>
+        <div class="finale-hud">
+          <div id="finale-caption" class="finale-caption" aria-live="polite"></div>
+          <button id="finale-skip" class="btn btn-quiet finale-skip" type="button">跳过 →</button>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen" aria-labelledby="result-title">
+        <div id="result-root"></div>
+      </section>
+
+      <section id="screen-future" class="screen" aria-labelledby="future-title">
+        <canvas id="future-canvas" aria-hidden="true"></canvas>
+        <div class="future-inner">
+          <div class="future-kicker">HIDDEN CHANNEL / 1024</div>
+          <h2 id="future-title">未来还没有被写出来。</h2>
+          <p>但你已经在这里了。</p>
+          <button id="future-back" class="btn btn-ghost" type="button">回到 2026</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="passport" class="passport" hidden aria-label="时间旅行护照">
+      <div class="passport-label">
+        <span>TRAVEL</span>
+        <strong>旅行护照</strong>
+      </div>
+      <div id="passport-track" class="passport-track"></div>
+    </div>
+
+    <div id="tunnel" class="tunnel" hidden aria-hidden="true">
+      <canvas id="tunnel-canvas"></canvas>
+      <div class="tunnel-hud">
+        <div id="tunnel-year" class="tunnel-year">2026</div>
+        <div id="tunnel-label" class="tunnel-label">正在校准时间坐标</div>
+        <button id="tunnel-skip" class="btn btn-quiet" type="button">跳过</button>
+      </div>
+    </div>
+
+    <div id="agent-banner" class="agent-banner" hidden>
+      <span class="ab-dot" aria-hidden="true"></span>
+      <span class="ab-text">AGENT TAKING OVER · 剩下的交给我</span>
+      <button id="agent-cancel" class="ab-cancel" type="button">我来</button>
+    </div>
+
+    <div id="modal-root" class="modal-root" hidden></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <noscript>需要启用 JavaScript 才能体验《代码时间机器》。</noscript>
+
+  <script src="js/core.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/era1-punch.js"></script>
+  <script src="js/era2-register.js"></script>
+  <script src="js/era3-unix.js"></script>
+  <script src="js/era4-web.js"></script>
+  <script src="js/era5-cloud.js"></script>
+  <script src="js/era6-ai.js"></script>
+  <script src="js/agent.js"></script>
+  <script src="js/archive.js"></script>
+  <script src="js/finale.js"></script>
+  <script src="js/result.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

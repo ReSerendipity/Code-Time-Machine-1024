@@ -1,0 +1,20 @@
+const { chromium } = require('playwright-core');
+(async () => {
+  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto('https://reserendipity.github.io/code-time-machine-1024/', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(3000);
+  console.log('live title:', await page.title());
+  console.log('live hero:', await page.locator('.hero-title').innerText());
+  await page.screenshot({ path: 'shots/25-live-github-pages.png', fullPage: true });
+  await page.fill('#traveler', '线上预览');
+  await page.click('#start-btn');
+  await page.waitForSelector('#screen-era.is-active .era-shell', { timeout: 15000 });
+  console.log('live era:', await page.locator('.era-title').innerText());
+  await page.screenshot({ path: 'shots/26-live-era1.png', fullPage: true });
+  console.log('errors:', errors.length ? errors : 'none');
+  await browser.close();
+})().catch(e => { console.error(e); process.exit(1); });
